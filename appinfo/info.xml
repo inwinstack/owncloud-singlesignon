@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<info>
+    <id>singlesignon</id>
+    <name>Single Sign On</name>
+    <description>Single sign on</description>
+    <licence>AGPL</licence>
+    <author>dauba</author>
+    <default_enable/>
+    <version>0.0.1</version>
+    <namespace>SingleSignOn</namespace>
+    <category>other</category>
+    <dependencies>
+        <owncloud min-version="8.1" />
+    </dependencies>
+</info>

@@ -1,0 +1,54 @@
+<?php
+namespace OCA\SingleSignOn;
+
+class GetInfo implements IUserInfoRequest {
+    private $soapClient;
+    private $userId;
+    private $email;
+    private $groups = array();
+    private $displayName;
+    private $errorMsg;
+
+    public function __construct($soapClient){
+        $this->soapClient = $soapClient;
+    }
+
+    public function name() {
+        return ISingleSignOnRequest::INFO;
+    }
+
+    public function send($data = null) {
+        $result = $this->soapClient->__soapCall("getToken2", array(array("TokenId" => $data["token"], "userIp" => $data["userIp"])));
+
+        if($result->return->ActXML->StatusCode != 200) {
+            $this->errorMsg = $result->return->ActXML->Message;
+            return false;
+        }
+
+        $this->userId = $result->return->ActXML->RsInfo->UserId;
+        $this->email = $result->return->ActXML->RsInfo->Email;
+        $this->displayName = $result->return->ActXML->RsInfo->CName;
+
+        return true;
+    }
+
+    public function getErrorMsg() {
+        return $this->errorMsg;
+    }
+
+    public function getUserId() {
+        return $this->userId;
+    }
+
+    public function getEmail() {
+        return $this->email;
+    }
+
+    public function getGroups() {
+        return $this->groups;
+    }
+
+    public function getDisplayName() {
+        return $this->displayName;
+    }
+}

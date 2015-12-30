@@ -1,0 +1,191 @@
+<?php
+namespace OCA\SingleSignOn;
+
+use OCP\IPreFilter;
+use Exception;
+
+class SingleSignOnPreFilter implements IPreFilter {
+
+    protected $ssos = array();
+    protected $token;
+    protected $ssoconfig;
+    protected $userIp;
+    protected $redirectUrl;
+    protected $hostIp;
+    protected $hostDomainName;
+    protected $soapClient;
+    protected $config;
+
+    public function run() {
+        try {
+            $this->process();
+        }catch (Exception $e){
+            echo $e->getMessage();
+        }
+    }
+
+    public function __construct() {
+        $this->config = \OC::$server->getConfig();
+        $this->ssoconfig = \OC::$server->getSystemConfig()->getValue("SSOCONFIG");
+        // $this->soapClient = new \SoapClient(NULL, array("location" => $this->ssoconfig["singleSignOnServer"]  . "server.php", "uri" => $this->ssoconfig["singleSignOnServer"]));
+        // $this->registers($this->ssoconfig["requests"]);
+        //file_put_contents("test.txt", print_r($this->ssoconfig, true));
+        //file_put_contents("test.txt", $this->ssoconfig["singleSignOnServer"]);
+        //die();
+        $this->requestManager = new RequestManager($this->ssoconfig["singleSignOnServer"], $this->ssoconfig["requests"]);
+        $this->userIp = $_SERVER["REMOTE_ADDR"];
+        $this->token = (isset($_COOKIE[$this->ssoconfig["token"]])) ? $_COOKIE[$this->ssoconfig["token"]] : false;
+        $this->redirectUrl = (isset($_GET["redirect_url"])) ? $_GET["redirect_url"] : false;
+    }
+
+    public function process() {
+        /*
+        if(!isset($this->ssos[ISingleSignOnRequest::VALIDTOKEN])) {
+            throw new Exception("VaildTokenRequest didn't registered");
+        }
+
+        if(!isset($this->ssos[ISingleSignOnRequest::INFO])) {
+            throw new Exception("GetInfoRequest didn't registered");
+        }
+
+        if(!isset($this->ssos[ISingleSignOnRequest::INVALIDTOKEN])) {
+            throw new Exception("InVaildTokenRequest didn't registered");
+        }
+        */
+
+        $ssoUrl = $this->ssoconfig["ssoUrl"];
+        $redirectUrl = $this->redirectUrl;
+        //$validator = $this->ssos[ISingleSignOnRequest::VALIDTOKEN];
+        //$userInfo = $this->ssos[ISingleSignOnRequest::INFO];
+        //$invalidator = $this->ssos[ISingleSignOnRequest::INVALIDTOKEN];
+        $userInfo = $this->requestManager->getRequest(ISingleSignOnRequest::INFO);
+
+        if(isset($_GET["logout"]) && $_GET["logout"] == "true") {
+            if($this->ssoconfig["logoutSSO"]) {
+                $invalidator->send();
+            }
+            \OC_User::logout();
+            $this->redirect($ssoUrl);
+        }
+
+        if(empty($ssoUrl)){
+            header("HTTP/1.1 " . \OCP\AppFramework\Http::STATUS_UNAUTHORIZED);
+            header("Status: " . \OCP\AppFramework\Http::STATUS_UNAUTHORIZED);
+            header("WWW-Authenticate: ");
+            header("Retry-After: 120");
+
+            $template = new \OC_Template("singlesignon", "verificationFailure", "guest");
+            $template->printPage();
+            die();
+        }
+
+        if(\OC_User::isLoggedIn() && ($this->token === false || !$this->requestManager->send(ISingleSignOnRequest::VALIDTOKEN, array("token" => $this->getToken(), "userIp" => $this->getUserIp())))) {
+        //if(\OC_User::isLoggedIn() && ($this->token === false || !$validator->send())) {
+            header("HTTP/1.1 " . \OCP\AppFramework\Http::STATUS_UNAUTHORIZED);
+            header("Status: " . \OCP\AppFramework\Http::STATUS_UNAUTHORIZED);
+            header("WWW-Authenticate: ");
+            header("Retry-After: 120");
+
+            $template = new \OC_Template("singlesignon", "tokenExpired", "guest");
+            $template->printPage();
+            die();
+        }
+
+            file_put_contents("test.txt", $this->getToken());
+        if($this->getToken() === false || !$this->requestManager->send(ISingleSignOnRequest::VALIDTOKEN, array("token" => $this->getToken(), "userIp" => $this->getUserIp()))) {
+        //if($this->token === false || !$validator->send()) {
+            $url = ($redirectUrl === false) ? $ssoUrl : $ssoUrl . $this->ssoconfig["returnUrl"] . $redirectUrl;
+            $this->redirect($url);
+        }
+
+        if(\OC_User::isLoggedIn()) {
+            return ;
+        }
+
+        //if(!$userInfo->send()) {
+        if(!$userInfo->send(array("token" => $this->getToken(), "userIp" => $this->getUserIp()))) {
+            return ;
+        }
+
+        if(!\OC_User::userExists($userInfo->getUserId())) {
+            $this->firstLogin($userInfo);
+            $this->redirect($redirectUrl);
+        }
+        else {
+            $this->login($userInfo->getUserId(), $this->token);
+            $this->redirect($redirectUrl);
+        }
+    }
+
+    private function registers($requests) {
+        foreach($requests as $request) {
+            $request = new $request($this);
+            $this->registerRequest($request);
+        }
+    }
+
+    private function registerRequest (ISingleSignOnRequest $sso) {
+        $name = $sso->name();
+        $this->ssos[$name] = $sso;
+    }
+
+    private function redirect($url) {
+        if($url === false) {
+            \OC_Util::redirectToDefaultPage();
+        }
+        else {
+            header("location: " . $url);
+            exit();
+        }
+    }
+
+    public static function getInstance() {
+        $processor = new static();
+        return $processor;
+    }
+
+    private function firstLogin($userInfo) {
+        $password = (array_key_exists(ISingleSignOnRequest::USERPASSWORDGENERATOR, $this->ssos)) ? $ssos[ISingleSignOnRequest::USERPASSWORDGENERATOR]->send() : $userInfo->getUserId();
+
+        \OC_User::createUser($userInfo->getUserId(), $password);
+        \OC_User::setDisplayName($userInfo->getUserId(), $userInfo->getDisplayName());
+        $this->config->setUserValue($userInfo->getUserId(), "settings", "email", $userInfo->getEmail());
+        \OC_User::login($userInfo->getUserId(), $password);
+    }
+
+    private function login($username, $token) {
+        $user = \OC::$server->getUserManager()->get($username);
+        \OC::$server->getUserSession()->setUser($user);
+
+        return true;
+    }
+
+    public function getToken() {
+        return $this->token;
+    }
+    
+    public function getUserIp() {
+        return $this->userIp;
+    }
+
+    public function getSsoConfig() {
+        return $this->ssoconfig;
+    }
+
+    public function getSoapClient() {
+        return $this->soapClient;
+    }
+
+    public static function webDavLogin($username, $password) {
+        $processor = self::getInstance(); 
+
+        $data["userId"] = $username;
+        $data["password"] = $password;
+
+        // $token = $processor->ssos[ISingleSignOnRequest::GETTOKEN]->send($data);
+
+        $token = "81d97be71dac58d7d56272d150551ec3";
+
+        return $processor->login($username, $token);
+    }
+}

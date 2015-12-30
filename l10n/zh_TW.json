@@ -1,0 +1,6 @@
+{ "translations": {
+    "Token expired!":"Token 過期了！",
+    "Redirect to login page":"重新導向到登入頁面"
+    "You do not have permission to use ownCloud!":"您沒有權限使用ownCloud!"
+},"pluralForm" :"nplurals=1; plural=0;"
+}
