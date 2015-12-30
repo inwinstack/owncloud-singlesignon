@@ -9,6 +9,9 @@
     <version>0.0.1</version>
     <namespace>SingleSignOn</namespace>
     <category>other</category>
+	<types>
+		<prefilter/>
+	</types>
     <dependencies>
         <owncloud min-version="8.1" />
     </dependencies>
