@@ -21,4 +21,7 @@ $container->registerService("L10N", function($c) {
     return $c->getServerContainer()->getL10N("singlesignon");
 });
 
+$processor = new \OCA\SingleSignOn\SingleSignOnProcessor();
+$processor->run();
+
 \OCP\Util::addScript("singlesignon", "script");
