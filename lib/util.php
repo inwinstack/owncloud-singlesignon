@@ -3,8 +3,14 @@ namespace OCA\SingleSignOn;
 
 class Util {
     public static function login($username) {
-        $user = \OC::$server->getUserManager()->get($username);
+        $manager = \OC::$server->getUserManager();
+        $manager->emit('\OC\User', 'preLogin', array($username, $password));
+
+        $user = $manager->get($username);
         \OC::$server->getUserSession()->setUser($user);
+
+        $manager->emit('\OC\User', 'postLogin', array($user, $password));
+
 
         return true;
     }
@@ -23,10 +29,6 @@ class Util {
 
         $data["userId"] = $username;
         $data["password"] = $password;
-
-        // $token = $processor->ssos[ISingleSignOnRequest::GETTOKEN]->send($data);
-
-        $token = "81d97be71dac58d7d56272d150551ec3";
 
         return self::login($username);
     }
