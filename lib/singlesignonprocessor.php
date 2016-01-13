@@ -1,10 +1,9 @@
 <?php
 namespace OCA\SingleSignOn;
 
-use OCP\IPreFilter;
 use Exception;
 
-class SingleSignOnPreFilter implements IPreFilter {
+class SingleSignOnProcessor {
 
     private $token;
     private $ssoconfig;
@@ -83,7 +82,7 @@ class SingleSignOnPreFilter implements IPreFilter {
             Util::redirect($redirectUrl);
         }
         else {
-            Util::login($userInfo->getUserId());
+            Util::login($userInfo->getUserId(), $this->getToken());
             Util::redirect($redirectUrl);
         }
     }
