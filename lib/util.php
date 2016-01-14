@@ -24,10 +24,6 @@ class Util {
         $data["userId"] = $username;
         $data["password"] = $password;
 
-        // $token = $processor->ssos[ISingleSignOnRequest::GETTOKEN]->send($data);
-
-        $token = "81d97be71dac58d7d56272d150551ec3";
-
         return self::login($username);
     }
 
