@@ -10,7 +10,7 @@
     <namespace>SingleSignOn</namespace>
     <category>other</category>
 	<types>
-		<prefilter/>
+		<authentication/>
 	</types>
     <dependencies>
         <owncloud min-version="8.1" />
