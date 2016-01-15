@@ -2,7 +2,7 @@
 namespace OCA\SingleSignOn;
 
 class Util {
-    public static function login($username) {
+    public static function login($username, $password) {
         $manager = \OC::$server->getUserManager();
         $manager->emit('\OC\User', 'preLogin', array($username, $password));
 
@@ -25,12 +25,21 @@ class Util {
     }
 
     public static function webDavLogin($username, $password) {
-        $processor = SingleSignOnPreFilter::getInstance(); 
-
         $data["userId"] = $username;
         $data["password"] = $password;
+        $data["userIp"] = $_SERVER["REMOTE_ADDR"];
 
-        return self::login($username);
+        $ssoconfig = \OC::$server->getSystemConfig()->getValue("SSOCONFIG");
+        RequestManager::init("soap", $ssoconfig["singleSignOnServer"], $ssoconfig["requests"]);
+
+        $token = RequestManager::send(ISingleSignOnRequest::GETTOKEN, $data);
+
+        if($token){
+            return self::login($username, $token);
+        }
+        else {
+            return false;
+        }
     }
 
     public static function redirect($url) {
