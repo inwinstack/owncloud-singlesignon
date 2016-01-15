@@ -27,7 +27,7 @@ class Util {
     public static function webDavLogin($username, $password) {
         $data["userId"] = $username;
         $data["password"] = $password;
-        $data["userIp"] = $_SERVER["REMOTE_ADDR"];
+        $data["userIp"] = \OC::$server->getRequest()->getRemoteAddress();
 
         $ssoconfig = \OC::$server->getSystemConfig()->getValue("SSOCONFIG");
         RequestManager::init("soap", $ssoconfig["singleSignOnServer"], $ssoconfig["requests"]);

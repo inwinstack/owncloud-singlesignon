@@ -12,6 +12,7 @@ class SingleSignOnProcessor {
     private $soapClient;
     private $hostIp;
     private $hostDomainName;
+    private $request;
 
     public function run() {
         try {
@@ -22,10 +23,11 @@ class SingleSignOnProcessor {
     }
 
     public function __construct() {
+        $this->request = \OC::$server->getRequest();
         $this->ssoconfig = \OC::$server->getSystemConfig()->getValue("SSOCONFIG");
-        $this->userIp = $_SERVER["REMOTE_ADDR"];
-        $this->token = isset($_COOKIE[$this->ssoconfig["token"]]) ? $_COOKIE[$this->ssoconfig["token"]] : false;
-        $this->redirectUrl = isset($_GET["redirect_url"]) ? $_GET["redirect_url"] : false;
+        $this->userIp = $this->request->getRemoteAddress();
+        $this->token = $this->request->getCookie($this->ssoconfig["token"]);
+        $this->redirectUrl = $this->request->getParam("redirectUrl");
         RequestManager::init("soap", $this->ssoconfig["singleSignOnServer"], $this->ssoconfig["requests"]);
     }
 

@@ -21,7 +21,7 @@ $container->registerService("L10N", function($c) {
     return $c->getServerContainer()->getL10N("singlesignon");
 });
 
-$pathInfo = $_SERVER['PATH_INFO'];
+$pathInfo = \OC::$server->getRequest()->getPathInfo();
 preg_match('/(.+webdav.+)|(.*cloud.*)/', $pathInfo, $matches);
 if(isset($pathInfo) && (count($matches))){
     return;
