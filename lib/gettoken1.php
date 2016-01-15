@@ -4,11 +4,11 @@ namespace OCA\SingleSignOn;
 
 class GetToken1 implements ISingleSignOnRequest {
 
-    private $processor;
+    private $soapClient;
     private $errorMsg;
     
-    public function __construct($processor){
-        $this->processor = $processor;
+    public function __construct($soapClient){
+        $this->soapClient = $soapClient;
     }
 
     public function name() {
@@ -16,7 +16,7 @@ class GetToken1 implements ISingleSignOnRequest {
     }
 
     public function send($data) {
-        $result = $this->processor->getSoapClient()->__soapCall("getToken1", array(array("UserId" => $data["userId"],"Password" => $data["password"],  "UserIp" => $this->processor->getUserIp())));
+        $result = $this->soapClient->__soapCall("getToken1", array(array("UserId" => $data["userId"],"Password" => $data["password"],  "UserIp" => $data["userIp"])));
 
         if($result->return->ActXML->StatusCode != 200) {
             $this->errorMsg = $result->return->ActXML->Message;

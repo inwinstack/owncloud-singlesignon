@@ -21,7 +21,14 @@ $container->registerService("L10N", function($c) {
     return $c->getServerContainer()->getL10N("singlesignon");
 });
 
-$processor = new \OCA\SingleSignOn\SingleSignOnProcessor();
-$processor->run();
+$pathInfo = $_SERVER['PATH_INFO'];
+preg_match('/(.+webdav.+)|(.*cloud.*)/', $pathInfo, $matches);
+if(isset($pathInfo) && (count($matches))){
+    return;
+}
+else {
+    $processor = new \OCA\SingleSignOn\SingleSignOnProcessor();
+    $processor->run();
+}
 
 \OCP\Util::addScript("singlesignon", "script");
