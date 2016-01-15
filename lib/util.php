@@ -21,7 +21,7 @@ class Util {
         \OC_User::createUser($userInfo->getUserId(), $password);
         \OC_User::setDisplayName($userInfo->getUserId(), $userInfo->getDisplayName());
         \OC::$server->getConfig()->setUserValue($userInfo->getUserId(), "settings", "email", $userInfo->getEmail());
-        \OC_User::login($userInfo->getUserId(), $password);
+        return \OC_User::login($userInfo->getUserId(), $password);
     }
 
     public static function webDavLogin($username, $password) {
@@ -34,16 +34,25 @@ class Util {
 
         $token = RequestManager::send(ISingleSignOnRequest::GETTOKEN, $data);
 
+        $userInfo = RequestManager::getRequest(ISingleSignOnRequest::INFO);
+
+        if(!$userInfo->send(array("token" => $token, "userIp" => $data["userIp"]))) {
+            return ;
+        }
+        
+        if(!\OC_User::userExists($userInfo->getUserId())) {
+            return self::firstLogin($userInfo);
+        }
+
         if($token){
             return self::login($username, $token);
         }
-        else {
-            return false;
-        }
+
+        return false;
     }
 
     public static function redirect($url) {
-        if($url === false) {
+        if(!$url) {
             \OC_Util::redirectToDefaultPage();
         }
         else {
