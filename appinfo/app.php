@@ -23,12 +23,11 @@ $container->registerService("L10N", function($c) {
 
 $pathInfo = \OC::$server->getRequest()->getPathInfo();
 preg_match('/(.+webdav.+)|(.*cloud.*)/', $pathInfo, $matches);
-if(isset($pathInfo) && (count($matches))){
+if(isset($pathInfo) && count($matches) || $pathInfo == "/admin" || \OC_User::isAdminUser(\OC_User::getUser())){
     return;
 }
-else {
-    $processor = new \OCA\SingleSignOn\SingleSignOnProcessor();
-    $processor->run();
-}
+
+$processor = new \OCA\SingleSignOn\SingleSignOnProcessor();
+$processor->run();
 
 \OCP\Util::addScript("singlesignon", "script");
