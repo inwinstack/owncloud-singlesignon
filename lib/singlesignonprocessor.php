@@ -32,7 +32,7 @@ class SingleSignOnProcessor {
     }
 
     public function process() {
-        $ssoUrl = $this->ssoconfig["ssoUrl"] . $this->ssoconfig["redirectUrl"] . $redirectUrl;
+        $ssoUrl = $this->ssoconfig["ssoUrl"];
         $userInfo = RequestManager::getRequest(ISingleSignOnRequest::INFO);
 
         if(isset($_GET["logout"]) && $_GET["logout"] == "true") {
@@ -66,7 +66,7 @@ class SingleSignOnProcessor {
         }
 
         if($this->getToken() === false || !RequestManager::send(ISingleSignOnRequest::VALIDTOKEN, array("token" => $this->getToken(), "userIp" => $this->getUserIp()))) {
-            $url = ($redirectUrl === false) ? $ssoUrl : $ssoUrl . $this->ssoconfig["returnUrl"] . $redirectUrl;
+            $url = ($this->redirectUrl) ? $ssoUrl . $this->ssoconfig["returnUrl"] . $this->redirectUrl : $ssoUrl;
             Util::redirect($url);
         }
 
@@ -80,11 +80,11 @@ class SingleSignOnProcessor {
 
         if(!\OC_User::userExists($userInfo->getUserId())) {
             Util::firstLogin($userInfo, $this->getToken());
-            Util::redirect($redirectUrl);
+            Util::redirect($this->redirectUrl);
         }
         else {
             Util::login($userInfo->getUserId(), $this->getToken());
-            Util::redirect($redirectUrl);
+            Util::redirect($this->redirectUrl);
         }
     }
 
