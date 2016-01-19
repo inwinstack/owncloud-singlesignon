@@ -26,7 +26,7 @@ class SingleSignOnProcessor {
         $this->request = \OC::$server->getRequest();
         $this->ssoconfig = \OC::$server->getSystemConfig()->getValue("SSOCONFIG");
         $this->userIp = $this->request->getRemoteAddress();
-        $this->redirectUrl = $this->request->getServerProtocol() . "://" . $this->request->getServerHost() . $this->request->getRequestUri();
+        $this->redirectUrl = \OC_Util::getDefaultPageUrl();
         $this->token = $this->request->offsetGet($this->ssoconfig["urlToken"]) | \OC::$server->getSession()->get("sso_token") | $this->request->getCookie($this->ssoconfig["token"]);
         RequestManager::init("soap", $this->ssoconfig["singleSignOnServer"], $this->ssoconfig["requests"]);
     }
