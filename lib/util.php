@@ -62,4 +62,26 @@ class Util {
             exit();
         }
     }
+
+    /**
+     * Check user region and redirect to correct region.
+     *
+     * @return void
+     */
+    public static function redirectRegion($userInfo, $regions, $serverUrls, $token) {
+        $region = $userInfo->getRegion();
+        $request = \OC::$server->getRequest();
+
+        preg_match("/.*(\?.*)$/", $request->getRequestUri(), $param);
+
+        $redirectUrl = $serverUrls[$regions[$region]] . $param[1];
+
+        preg_match("/https*:\/\/(.*)\//", $redirectUrl, $url);
+
+        if($request->getServerHost() === $url[1]) {
+            return ;
+        }
+
+        self::redirect($redirectUrl);
+    }
 }

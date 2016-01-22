@@ -28,6 +28,7 @@ class GetInfo implements IUserInfoRequest {
         $this->userId = $result->return->ActXML->RsInfo->UserId;
         $this->email = $result->return->ActXML->RsInfo->Email;
         $this->displayName = $result->return->ActXML->RsInfo->CName;
+        $this->userSid = $result->return->ActXML->RsInfo->UserSid;
 
         return true;
     }
@@ -50,5 +51,14 @@ class GetInfo implements IUserInfoRequest {
 
     public function getDisplayName() {
         return $this->displayName;
+    }
+
+    /**
+     * Getter for userSid
+     *
+     * @return string userSid
+     */
+    public function getRegion() {
+        return $this->userSid;
     }
 }
