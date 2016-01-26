@@ -4,7 +4,6 @@ namespace OCA\SingleSignOn;
 
 class ValidToken implements ISingleSignOnRequest {
 
-    private $processor;
     private $errorMsg;
     
     public function __construct($soapClient){
@@ -16,14 +15,14 @@ class ValidToken implements ISingleSignOnRequest {
     }
 
     public function send($data = null) {
-        $result = $this->soapClient->__soapCall("getToken2", array(array("TokenId" => $data["token"], "userIp" => $data["userIp"])));
+        $result = $this->soapClient->__soapCall("validToken1", array(array("TokenId" => $data["token"], "userIp" => $data["userIp"])));
 
         if($result->return->ActXML->StatusCode != 200) {
             $this->errorMsg = $result->return->ActXML->Message;
             return false;
         }
 
-        return true;
+        return $result->return->ActXML->RsInfo;
     }
 
     public function getErrorMsg() {
