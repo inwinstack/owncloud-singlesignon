@@ -13,7 +13,8 @@ class SingleSignOnProcessor {
                                         "sso_return_url_key",
                                         "sso_requests",
                                         "sso_portal_url",
-                                        "sso_global_logout");
+                                        "sso_global_logout",
+                                        "sso_multiple_region");
 
     /**
      * \OC\SystemConfig
@@ -62,6 +63,11 @@ class SingleSignOnProcessor {
         $this->config = \OC::$server->getSystemConfig();
         $this->authMathod = $this->config->getValue("sso_auth_method");
 
+        if($this->config->getValue("sso_multiple_region")) {
+            array_push(self::$requiredKeys, "sso_owncloud_url");
+            array_push(self::$requiredKeys, "sso_regions");
+        }
+
         if ($this->authMathod === "param") {
             array_push(self::$requiredKeys, "sso_url_token_key");
         }
@@ -70,12 +76,17 @@ class SingleSignOnProcessor {
         }
 
         self::checkKeyExist(self::$requiredKeys);
-        self::checkConfigValueEmpty(self::$requiredKeys);
 
         $this->request = \OC::$server->getRequest();
         $this->userIp = $this->request->getRemoteAddress();
         $this->redirectUrl = \OC_Util::getDefaultPageUrl();
-        $this->token = $this->request->offsetGet($this->config->getValue("sso_url_token_key")) | \OC::$server->getSession()->get("sso_token") | $this->request->getCookie($this->config->getValue("sso_cookie_token_key"));
+
+        if(!\OC::$server->getSession()->exists("sso_token")) {
+            $this->token = $this->authMathod === "param" ? $this->request->offsetGet($this->config->getValue("sso_url_token_key")) : $this->request->getCookie($this->config->getValue("sso_cookie_token_key"));
+        }
+        else {
+            $this->token = \OC::$server->getSession()->get("sso_token");
+        }
 
         RequestManager::init("soap", $this->config->getValue("sso_portal_url"), $this->config->getValue("sso_requests"));
     }
@@ -103,7 +114,7 @@ class SingleSignOnProcessor {
             die();
         }
 
-        if(\OC_User::isLoggedIn() && ($this->token === false || !RequestManager::send(ISingleSignOnRequest::VALIDTOKEN, array("token" => $this->getToken(), "userIp" => $this->getUserIp())))) {
+        if(\OC_User::isLoggedIn() && (!$this->token || !RequestManager::send(ISingleSignOnRequest::VALIDTOKEN, array("token" => $this->getToken(), "userIp" => $this->getUserIp())))) {
             header("HTTP/1.1 " . \OCP\AppFramework\Http::STATUS_UNAUTHORIZED);
             header("Status: " . \OCP\AppFramework\Http::STATUS_UNAUTHORIZED); header("WWW-Authenticate: "); header("Retry-After: 120");
 
@@ -175,7 +186,6 @@ class SingleSignOnProcessor {
      * Get SingleSignOnProcessor.
      *
      * @return Object \OCA\SingleSigoOnProcessor
-     * @author Dauba
      */
     public static function getInstance() {
         return new static();
@@ -185,7 +195,6 @@ class SingleSignOnProcessor {
      * Get the user token
      *
      * @return string user token
-     * @author Dauba
      */
     public function getToken() {
         return $this->token;
@@ -195,7 +204,6 @@ class SingleSignOnProcessor {
      * Get the user ip
      *
      * @return string user ip
-     * @author Dauba
      */
     public function getUserIp() {
         return $this->userIp;
