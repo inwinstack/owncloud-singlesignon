@@ -146,6 +146,11 @@ class SingleSignOnProcessor {
         }
         else {
             Util::login($userInfo->getUserId(), $this->getToken());
+        
+            if($this->request->getHeader("ORIGIN")) {
+                return;
+            }
+
             Util::redirect($this->redirectUrl);
         }
     }

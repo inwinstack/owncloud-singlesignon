@@ -14,7 +14,7 @@ namespace OCA\SingleSignOn\AppInfo;
 use OCP\AppFramework\App;
 
 $app = new App('singlesignon');
-
+$application = new Application();
 $container = $app->getContainer();
 
 $container->registerService("L10N", function($c) {
