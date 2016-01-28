@@ -109,7 +109,7 @@ class SingleSignOnProcessor {
                 RequestManager::send(ISingleSignOnRequest::INVALIDTOKEN);
             }
             \OC_User::logout();
-            Util::redirect($ssoUrl);
+            Util::redirect($ssoUrl . $this->config->getValue("sso_return_url_key") . $this->redirectUrl);
         }
 
         if(empty($ssoUrl)) {
