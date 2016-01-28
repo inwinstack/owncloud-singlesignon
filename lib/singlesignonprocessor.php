@@ -81,11 +81,20 @@ class SingleSignOnProcessor {
         $this->userIp = $this->request->getRemoteAddress();
         $this->redirectUrl = \OC_Util::getDefaultPageUrl();
 
-        if(!\OC::$server->getSession()->exists("sso_token")) {
-            $this->token = $this->authMathod === "param" ? $this->request->offsetGet($this->config->getValue("sso_url_token_key")) : $this->request->getCookie($this->config->getValue("sso_cookie_token_key"));
+        if($this->request->offsetGet($this->config->getValue("sso_url_token_key"))) {
+            $this->token = $this->request->offsetGet($this->config->getValue("sso_url_token_key"));
+        }
+        else if($this->request->getCookie($this->config->getValue("sso_cookie_token_key"))) {
+            $this->token = $this->request->getCookie($this->config->getValue("sso_cookie_token_key"));
+        }
+        else if($this->request->getHeader("SSO-Token")){
+            $this->token = $this->request->getHeader("SSO-Token");
+        }
+        else if(\OC::$server->getSession()->exists("sso_token")) {
+            $this->token = \OC::$server->getSession()->get("sso_token");
         }
         else {
-            $this->token = \OC::$server->getSession()->get("sso_token");
+            $this->token = null;
         }
 
         RequestManager::init("soap", $this->config->getValue("sso_portal_url"), $this->config->getValue("sso_requests"));
