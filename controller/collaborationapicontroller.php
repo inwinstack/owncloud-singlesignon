@@ -137,7 +137,7 @@ class CollaborationApiController extends ApiController {
                 $passwordChanged
             );
             $url = self::generateShareLink($token);
-            $shareLinkUrls[$i]['name'] = $itemSourceName;
+            $shareLinkUrls[$i]['name'] = $name;
             $shareLinkUrls[$i]['url'] = $url;
         }
         json_encode($shareLinkUrls, JSON_PRETTY_PRINT);
