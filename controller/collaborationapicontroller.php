@@ -21,7 +21,16 @@ class CollaborationApiController extends ApiController {
 		parent::__construct($appName, $request);
 	}
 
-	
+	const msg_idNotExist = 'This file is not exist';
+    const msg_errorType = 'incorrect type $type of $file($id)';
+    const msg_unreshareable = 'This file is not allowed to reshare';
+    const msg_noRequireUnshareBeforeShare = 'This file is not allow unshare , because it hasn\'t be shared';
+    
+    private $fileTypePattern = '/(.*)(file)(.*)/';
+    private $errorTypePattern = '/(.*)(\$type)(.*)(\$file.*)/';
+
+    private $shareType = \OCP\Share::SHARE_TYPE_LINK;
+
     /**
 	 * @NoAdminRequired
 	 * @NoCSRFRequired
@@ -115,21 +124,67 @@ class CollaborationApiController extends ApiController {
      * @SSOCORS
 	 */
     public function shareLinks($files, $password = null, $expiration = null){
-
+        
         $shareLinkUrls = array();
         for($i = 0; $i < sizeof($files); $i++){
             $type = $files[$i]['type'];
             $id = $files[$i]['id'];
             $name = $files[$i]['name'];
-            $permissions = $files[$i]['permissions'];
-        
-            $shareType = \OCP\Share::SHARE_TYPE_LINK;
+            $permissions = 1;
             
+            $path = \OC\Files\Filesystem::getPath($id);
+            if($path === null){
+                $shareLinkUrls[$i]['name'] = $name;
+                $shareLinkUrls[$i]['url'] = null;
+                $shareLinkUrls[$i]['id'] = $id;
+                $shareLinkUrls[$i]['type'] = $type;
+                if($type == 'file'){
+                    $shareLinkUrls[$i]['message'] = self::msg_idNotExist;
+                }
+                else{
+                    $replacement = '${1}folder${3}';
+                    $msg_idNotExist = preg_replace($this->fileTypePattern, $replacement, self::msg_idNotExist);
+                    $shareLinkUrls[$i]['message'] = $msg_idNotExist;
+                }
+                continue;
+            }
+
+            if (\OC\Files\Filesystem::filetype($path) !== $type) {
+                $shareLinkUrls[$i]['name'] = $name;
+                $shareLinkUrls[$i]['url'] = null;
+                $shareLinkUrls[$i]['id'] = $id;
+                $shareLinkUrls[$i]['type'] = $type;
+                $replacement = '${1}\''. $type .'\'${3}'. $name . '(' . $id . ')';
+                $msg_errorType = preg_replace($this->errorTypePattern, $replacement, self::msg_errorType);
+                $shareLinkUrls[$i]['message'] = $msg_errorType;
+                continue;
+            }
+
+            if(!\OC\Files\Filesystem::isSharable($path)){
+                $shareLinkUrls[$i]['name'] = $name;
+                $shareLinkUrls[$i]['url'] = null;
+                $shareLinkUrls[$i]['id'] = $id;
+                $shareLinkUrls[$i]['type'] = $type;
+                if($type == 'file'){
+                    $shareLinkUrls[$i]['message'] = self::msg_unreshareable;
+                }
+                else{
+                    $replacement = '${1}folder${3}';
+                    $msg_unreshareable = preg_replace($this->fileTypePattern, $replacement, self::msg_unreshareable);
+                    $shareLinkUrls[$i]['message'] = $msg_unreshareable;
+                }
+                continue;
+            }
+            
+            if($type == 'dir'){
+                $type = 'folder';
+            }
+
             $passwordChanged = $password !== null;
             $token = \OCP\Share::shareItem(
                 $type,
                 $id,
-                $shareType,
+                $this->shareType,
                 $password,
                 $permissions,
                 $name,
@@ -139,12 +194,55 @@ class CollaborationApiController extends ApiController {
             $url = self::generateShareLink($token);
             $shareLinkUrls[$i]['name'] = $name;
             $shareLinkUrls[$i]['url'] = $url;
+            $shareLinkUrls[$i]['id'] = $id;
+            $shareLinkUrls[$i]['type'] = $type;
         }
         json_encode($shareLinkUrls, JSON_PRETTY_PRINT);
         return new DataResponse(array("data" => $shareLinkUrls, "status" => 'success'));
-    } 
+    }
 
-    private static function generateShareLink($token){
+    /**
+	 * @NoAdminRequired
+	 * @NoCSRFRequired
+     * @SSOCORS
+	 */
+    public function unshare($id, $type) {
+        $shareWith = null;
+        $path = \OC\Files\Filesystem::getPath($id);
+        $response = array('id' => $id);
+        if($path === null){
+            if($type == 'file'){
+                $error_msg = self::msg_idNotExist;
+            }
+            else{
+                $replacement = '${1}folder${3}';
+                $error_msg = preg_replace($this->fileTypePattern, $replacement, self::msg_idNotExist);
+            }
+            return new DataResponse(array("data" => $response, "status" => 'error', "message" => $error_msg));
+        }
+
+        if (\OC\Files\Filesystem::filetype($path) !== $type) {
+            $replacement = '${1}\''. $type .'\'${3}'. 'id: ' . $id;
+            $error_msg = preg_replace($this->errorTypePattern, $replacement, self::msg_errorType);
+            return new DataResponse(array("data" => $response, "status" => 'error', "message" => $error_msg));
+        }
+
+        if($type == 'dir'){
+            $type = 'folder';
+            $replacement = '${1}folder${3}';
+            $error_msg = preg_replace($this->fileTypePattern, $replacement, self::msg_noRequireUnshareBeforeShare);
+        }
+        $unshare = \OCP\Share::unshare((string)$type,(string) $id, (int)$this->shareType, $shareWith);
+        if($unshare){
+            return new DataResponse(array("data" => $response, "status" => 'success'));
+        }
+        else{
+            return new DataResponse(array("data" => $response, "status" => 'error', "message" => $error_msg));
+        }
+    }
+    
+
+    private static function generateShareLink($token) {
         $request = \OC::$server->getRequest();
         $protocol = $request->getServerProtocol();
         $host = $request->getServerHost();
@@ -153,5 +251,4 @@ class CollaborationApiController extends ApiController {
         $shareLinkUrl = $protocol . "://" . $host . $webRoot . "/index.php" . "/s/" . $token;
         return $shareLinkUrl;
     }
-
 }
