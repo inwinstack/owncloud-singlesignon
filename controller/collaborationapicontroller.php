@@ -191,6 +191,7 @@ class CollaborationApiController extends ApiController {
                 (!empty($expiration) ? new \DateTime((string)$expiration) : null),
                 $passwordChanged
             );
+            $type = "dir";
             $url = self::generateShareLink($token);
             $shareLinkUrls[$i]['name'] = $name;
             $shareLinkUrls[$i]['url'] = $url;
