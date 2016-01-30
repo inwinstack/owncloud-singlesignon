@@ -232,14 +232,14 @@ class CollaborationApiController extends ApiController {
 
         if($type == 'dir'){
             $type = 'folder';
-            $replacement = '${1}folder${3}';
-            $error_msg = preg_replace($this->fileTypePattern, $replacement, self::msg_noRequireUnshareBeforeShare);
         }
         $unshare = \OCP\Share::unshare((string)$type,(string) $id, (int)$this->shareType, $shareWith);
         if($unshare){
             return new DataResponse(array('data' => $response, 'status' => 'success'));
         }
         else{
+            $replacement = '${1}folder${3}';
+            $error_msg = preg_replace($this->fileTypePattern, $replacement, self::msg_noRequireUnshareBeforeShare);
             return new DataResponse(array('data' => $response, 'status' => 'error', 'message' => $error_msg));
         }
     }
