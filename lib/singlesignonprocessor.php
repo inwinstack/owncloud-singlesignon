@@ -112,6 +112,17 @@ class SingleSignOnProcessor {
             Util::redirect($ssoUrl . $this->config->getValue("sso_return_url_key") . $this->redirectUrl);
         }
 
+        if((\OC_User::isLoggedIn() && !$this->getToken())) {
+            header("HTTP/1.1 " . \OCP\AppFramework\Http::STATUS_UNAUTHORIZED);
+            header("Status: " . \OCP\AppFramework\Http::STATUS_UNAUTHORIZED);
+            header("WWW-Authenticate: ");
+            header("Retry-After: 120");
+
+            $template = new \OC_Template("singlesignon", "unauthorizedActions", "guest");
+            $template->printPage();
+            die();
+        }
+
         if(empty($ssoUrl)) {
             header("HTTP/1.1 " . \OCP\AppFramework\Http::STATUS_UNAUTHORIZED);
             header("Status: " . \OCP\AppFramework\Http::STATUS_UNAUTHORIZED);
@@ -123,7 +134,7 @@ class SingleSignOnProcessor {
             die();
         }
 
-        if(\OC_User::isLoggedIn() && (!$this->token || !RequestManager::send(ISingleSignOnRequest::VALIDTOKEN, array("token" => $this->getToken(), "userIp" => $this->getUserIp())))) {
+        if(\OC_User::isLoggedIn() && (!RequestManager::send(ISingleSignOnRequest::VALIDTOKEN, array("token" => $this->getToken(), "userIp" => $this->getUserIp())))) {
             header("HTTP/1.1 " . \OCP\AppFramework\Http::STATUS_UNAUTHORIZED);
             header("Status: " . \OCP\AppFramework\Http::STATUS_UNAUTHORIZED); header("WWW-Authenticate: "); header("Retry-After: 120");
 
