@@ -104,6 +104,12 @@ class SingleSignOnProcessor {
         $ssoUrl = $this->config->getValue("sso_login_url");
         $userInfo = RequestManager::getRequest(ISingleSignOnRequest::INFO);
 
+        $pathInfo = $this->request->getPathInfo();
+        preg_match('/(.+webdav.+)|(.*cloud.*)|(.*\/s\/.*)/', $pathInfo, $matches);
+        if((isset($pathInfo) && count($matches)) || $pathInfo === "/admin" || \OC_User::isAdminUser(\OC_User::getUser())){
+            return;
+        }
+
         if(isset($_GET["logout"]) && $_GET["logout"] == "true") {
             if($this->config->getValue("sso_global_logout")) {
                 RequestManager::send(ISingleSignOnRequest::INVALIDTOKEN);
