@@ -4,11 +4,16 @@ namespace OCA\SingleSignOn;
 use Exception;
 
 class RequestManager {
-    private static $soapClient;
+    private static $serverConnection;
     private static $requests = array();
 
-    public static function init($clientType, $serverUrl, $requests) {
-        self::$soapClient = new \SoapClient(NULL, array("location" => $serverUrl . "server.php", "uri" => $serverUrl));
+    public static function init($serverUrl, $requests) {
+        if (!class_exists('\\OCA\\SingleSignOn\\APIServerConnection')) {
+            throw new Exception("The class \\OCA\\SingleSignOn\\APIServerConnection did't exist.");
+        }
+
+        self::$serverConnection = new \OCA\SingleSignOn\APIServerConnection($serverUrl);
+        self::$serverConnection = self::$serverConnection->getConnection();
 
         foreach($requests as $request) {
             if(!class_exists($request)) {
@@ -17,7 +22,7 @@ class RequestManager {
         }
 
         foreach($requests as $request) {
-            $request = new $request(self::$soapClient);
+            $request = new $request(self::$serverConnection);
             if($request instanceof ISingleSignOnRequest) {
                 self::$requests[$request->name()] = $request;
             }
