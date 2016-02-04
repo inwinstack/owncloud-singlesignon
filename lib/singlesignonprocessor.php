@@ -42,11 +42,6 @@ class SingleSignOnProcessor {
     private $redirectUrl;
 
     /**
-     * soap client object
-     */
-    private $soapClient;
-
-    /**
      * SSO auth method
      */ 
     private $authMathod;
@@ -97,7 +92,7 @@ class SingleSignOnProcessor {
             $this->token = null;
         }
 
-        RequestManager::init("soap", $this->config->getValue("sso_portal_url"), $this->config->getValue("sso_requests"));
+        RequestManager::init($this->config->getValue("sso_portal_url"), $this->config->getValue("sso_requests"));
     }
 
     public function process() {

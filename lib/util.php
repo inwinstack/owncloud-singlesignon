@@ -32,7 +32,7 @@ class Util {
         $data["userIp"] = \OC::$server->getRequest()->getRemoteAddress();
 
         $config = \OC::$server->getSystemConfig();
-        RequestManager::init("soap", $config->getValue("sso_portal_url"), $config->getValue("sso_requests"));
+        RequestManager::init($config->getValue("sso_portal_url"), $config->getValue("sso_requests"));
 
         $token = RequestManager::send(ISingleSignOnRequest::GETTOKEN, $data);
 
