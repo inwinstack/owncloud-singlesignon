@@ -8,7 +8,11 @@ class Util {
 
         $user = $manager->get($username);
         \OC::$server->getUserSession()->setUser($user);
+        \OC::$server->getUserSession()->setLoginName($user);
         \OC::$server->getSession()->set("sso_token", $token);
+
+        \OC_Util::setupFS($username);
+        \OC::$server->getUserFolder($username);
 
         $manager->emit('\OC\User', 'postLogin', array($user, $token));
 
