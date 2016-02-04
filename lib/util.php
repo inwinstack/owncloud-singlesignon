@@ -43,7 +43,7 @@ class Util {
         }
         
         if(!\OC_User::userExists($userInfo->getUserId())) {
-            return self::firstLogin($userInfo);
+            return self::firstLogin($userInfo, $token);
         }
 
         if($token){
