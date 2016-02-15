@@ -100,8 +100,10 @@ class SingleSignOnProcessor {
         $userInfo = RequestManager::getRequest(ISingleSignOnRequest::INFO);
 
         $pathInfo = $this->request->getPathInfo();
+        $requestUri = $this->request->getRequestUri();
         preg_match('/(.+webdav.+)|(.*cloud.*)|(.*\/s\/.*)/', $pathInfo, $matches);
-        if((isset($pathInfo) && count($matches)) || $pathInfo === "/admin" || \OC_User::isAdminUser(\OC_User::getUser())){
+        preg_match('/(.*\/ocs\/.*)/', $requestUri, $matches1);
+        if((isset($pathInfo) && count($matches)) || count($matches1) || $pathInfo === "/admin" || \OC_User::isAdminUser(\OC_User::getUser())){
             return;
         }
 
