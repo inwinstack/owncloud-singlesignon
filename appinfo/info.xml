@@ -1,8 +1,10 @@
 <?xml version="1.0"?>
 <info>
     <id>singlesignon</id>
-    <name>Single Sign On</name>
-    <description>Single sign on</description>
+    <name>Single Sign-On</name>
+    <description>
+        This app make ownCloud authenticate users with Single Sign-On service.
+    </description>
     <licence>AGPL</licence>
     <author>dauba</author>
     <default_enable/>
