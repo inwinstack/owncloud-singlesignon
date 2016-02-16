@@ -9,12 +9,21 @@ class SingleSignOnProcessor {
      * required keys in config/config.php
      */
     private static $requiredKeys = array("sso_login_url",
-                                        "sso_auth_method",
-                                        "sso_return_url_key",
-                                        "sso_requests",
-                                        "sso_portal_url",
-                                        "sso_global_logout",
-                                        "sso_multiple_region");
+                                         "sso_auth_method",
+                                         "sso_return_url_key",
+                                         "sso_requests",
+                                         "sso_portal_url",
+                                         "sso_global_logout",
+                                         "sso_multiple_region");
+
+    /**
+     * uri which unnecessary authenticate with Single Sign-On
+     */
+    private static $unnecessaryAuthUri = array("(.+\/webdav.+)",
+                                                "(.*\/cloud.*)",
+                                                "(.*\/s\/.*)",
+                                                "(\/admin)",
+                                                "(.*\/ocs\/.*)");
 
     /**
      * \OC\SystemConfig
@@ -99,11 +108,7 @@ class SingleSignOnProcessor {
         $ssoUrl = $this->config->getValue("sso_login_url");
         $userInfo = RequestManager::getRequest(ISingleSignOnRequest::INFO);
 
-        $pathInfo = $this->request->getPathInfo();
-        $requestUri = $this->request->getRequestUri();
-        preg_match('/(.+webdav.+)|(.*cloud.*)|(.*\/s\/.*)/', $pathInfo, $matches);
-        preg_match('/(.*\/ocs\/.*)/', $requestUri, $matches1);
-        if((isset($pathInfo) && count($matches)) || count($matches1) || $pathInfo === "/admin" || \OC_User::isAdminUser(\OC_User::getUser())){
+        if($this->unnecessaryAuth($this->request->getRequestUri())){
             return;
         }
 
@@ -210,6 +215,33 @@ class SingleSignOnProcessor {
         }
     }
 
+    /**
+     * unnecessaryAuth
+     * @param array url path
+     * @param array uri
+     * @return bool
+     **/
+    private function unnecessaryAuth($uri) {
+        for ($i = 0; $i < count(self::$unnecessaryAuthUri); $i++) {
+            if ($i == 0) {
+                $NAUri = self::$unnecessaryAuthUri[$i];
+            }
+            else {
+                $NAUri = $NAUri . "|" . self::$unnecessaryAuthUri[$i];
+            }
+        }
+
+        $NAUri = "/" . $NAUri . "/";
+
+        preg_match($NAUri, $uri, $matches);
+
+        if(count($matches) || \OC_User::isAdminUser(\OC_User::getUser())){
+            return true;
+        }
+
+        return false;
+    }
+    
     /**
      * Get SingleSignOnProcessor.
      *
