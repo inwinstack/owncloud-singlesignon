@@ -114,7 +114,7 @@ class SingleSignOnProcessor {
 
         if(isset($_GET["logout"]) && $_GET["logout"] == "true") {
             if($this->config->getValue("sso_global_logout")) {
-                RequestManager::send(ISingleSignOnRequest::INVALIDTOKEN);
+                RequestManager::send(ISingleSignOnRequest::INVALIDTOKEN,  array("token" => $this->getToken()));
             }
             \OC_User::logout();
             Util::redirect($ssoUrl . $this->config->getValue("sso_return_url_key") . $this->redirectUrl);

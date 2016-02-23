@@ -18,17 +18,19 @@ class GetInfo implements IUserInfoRequest {
     }
 
     public function send($data = null) {
-        $result = $this->soapClient->__soapCall("getToken2", array(array("TokenId" => $data["token"], "userIp" => $data["userIp"])));
+        $result = $this->soapClient->__soapCall("getToken2", array(array("TokenId" => $data["token"], "UserIP" => $data["userIp"])));
 
         if($result->return->ActXML->StatusCode != 200) {
             $this->errorMsg = $result->return->ActXML->Message;
             return false;
         }
 
-        $this->userId = $result->return->ActXML->RsInfo->UserId;
-        $this->email = $result->return->ActXML->RsInfo->Email;
-        $this->displayName = $result->return->ActXML->RsInfo->CName;
-        $this->userSid = $result->return->ActXML->RsInfo->UserSid;
+	$info = $result->return->ActXML->RsInfo->User;
+
+        $this->userId = $info->UserId;
+        $this->email = $info->Email;
+        $this->displayName = $info->CName;
+        $this->userSid = $info->UserSid;
 
         return true;
     }
