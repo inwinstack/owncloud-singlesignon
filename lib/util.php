@@ -45,13 +45,14 @@ class Util {
         if(!$userInfo->send(array("token" => $token, "userIp" => $data["userIp"]))) {
             return ;
         }
+	file_put_contents('test', $token);
         
         if(!\OC_User::userExists($userInfo->getUserId())) {
             return self::firstLogin($userInfo, $token);
         }
 
         if($token){
-            return self::login($username, $token);
+            return self::login($userInfo->getUserId(), $token);
         }
 
         return false;
