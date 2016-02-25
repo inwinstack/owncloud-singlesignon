@@ -23,7 +23,11 @@ class SingleSignOnProcessor {
                                                 "(.*\/cloud.*)",
                                                 "(.*\/s\/.*)",
                                                 "(\/admin)",
-                                                "(.*\/ocs\/.*)");
+                                                "(.*\/ocs\/.*)",
+                                                "(\/core\/js\/oc\.js)",
+                                                "(\/apps\/gallery\/config\.public)",
+                                                "(.*\/files_sharing\/ajax\/.*)",
+                                                "(\/apps\/files_pdfviewer\/)");
 
     /**
      * \OC\SystemConfig
