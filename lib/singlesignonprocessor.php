@@ -19,7 +19,7 @@ class SingleSignOnProcessor {
     /**
      * uri which unnecessary authenticate with Single Sign-On
      */
-    private static $unnecessaryAuthUri = array("(.+\/webdav.+)",
+    private static $unnecessaryAuthUri = array("(.*\/webdav.*)",
                                                 "(.*\/cloud.*)",
                                                 "(.*\/s\/.*)",
                                                 "(\/admin)",
@@ -27,7 +27,8 @@ class SingleSignOnProcessor {
                                                 "(\/core\/js\/oc\.js)",
                                                 "(\/apps\/gallery\/config\.public)",
                                                 "(.*\/files_sharing\/ajax\/.*)",
-                                                "(\/apps\/files_pdfviewer\/)");
+                                                "(\/apps\/files_pdfviewer\/)",
+                                                "(\/apps\/gallery\/.*)");
 
     /**
      * \OC\SystemConfig
