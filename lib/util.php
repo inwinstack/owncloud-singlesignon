@@ -21,10 +21,10 @@ class Util {
     }
 
     public static function firstLogin($userInfo, $token) {
-        $password = RequestManager::getRequest(ISingleSignOnRequest::USERPASSWORDGENERATOR) ? RequestManager::send(ISingleSignOnRequest::USERPASSWORDGENERATOR) : $userInfo->getUserId();
+        $password = RequestManager::getRequest(ISingleSignOnRequest::USERPASSWORDGENERATOR) ? RequestManager::send(ISingleSignOnRequest::USERPASSWORDGENERATOR) : $userInfo->getUserAccount();
 
         \OC_User::createUser($userInfo->getUserAccount(), $password);
-        \OC_User::setDisplayName($userInfo->getUserId(), $userInfo->getDisplayName());
+        \OC_User::setDisplayName($userInfo->getUserAccount(), $userInfo->getDisplayName());
         \OC::$server->getConfig()->setUserValue($userInfo->getUserAccount(), "settings", "email", $userInfo->getEmail());
         \OC::$server->getSession()->set("sso_token", $token);
         return \OC_User::login($userInfo->getUserAccount(), $password);
