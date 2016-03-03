@@ -136,7 +136,25 @@ class SingleSignOnProcessor {
             die();
         }
 
-        if(empty($ssoUrl)) {
+        if(\OC_User::isLoggedIn() && (!RequestManager::send(ISingleSignOnRequest::VALIDTOKEN, array("token" => $this->getToken(), "userIp" => $this->getUserIp())))) {
+            header("HTTP/1.1 " . \OCP\AppFramework\Http::STATUS_UNAUTHORIZED);
+            header("Status: " . \OCP\AppFramework\Http::STATUS_UNAUTHORIZED); header("WWW-Authenticate: "); header("Retry-After: 120");
+
+            $template = new \OC_Template("singlesignon", "tokenExpired", "guest");
+            $template->printPage();
+            die();
+        }
+
+        if(!$this->getToken() || !RequestManager::send(ISingleSignOnRequest::VALIDTOKEN, array("token" => $this->getToken(), "userIp" => $this->getUserIp()))) {
+            $url = ($this->redirectUrl) ? $ssoUrl . $this->config->getValue("sso_return_url_key") . $this->redirectUrl : $ssoUrl;
+            Util::redirect($url);
+        }
+
+        if(\OC_User::isLoggedIn()) {
+            return ;
+        }
+
+        if(empty($ssoUrl) || !$userInfo->send(array("token" => $this->getToken(), "userIp" => $this->getUserIp())) || !$userInfo->hasPermission()) {
             header("HTTP/1.1 " . \OCP\AppFramework\Http::STATUS_UNAUTHORIZED);
             header("Status: " . \OCP\AppFramework\Http::STATUS_UNAUTHORIZED);
             header("WWW-Authenticate: ");
@@ -147,38 +165,17 @@ class SingleSignOnProcessor {
             die();
         }
 
-        if(\OC_User::isLoggedIn() && (!RequestManager::send(ISingleSignOnRequest::VALIDTOKEN, array("token" => $this->getToken(), "userIp" => $this->getUserIp())))) {
-            header("HTTP/1.1 " . \OCP\AppFramework\Http::STATUS_UNAUTHORIZED);
-            header("Status: " . \OCP\AppFramework\Http::STATUS_UNAUTHORIZED); header("WWW-Authenticate: "); header("Retry-After: 120");
-
-            $template = new \OC_Template("singlesignon", "tokenExpired", "guest");
-            $template->printPage();
-            die();
-        }
-
-        if($this->getToken() === false || !RequestManager::send(ISingleSignOnRequest::VALIDTOKEN, array("token" => $this->getToken(), "userIp" => $this->getUserIp()))) {
-            $url = ($this->redirectUrl) ? $ssoUrl . $this->config->getValue("sso_return_url_key") . $this->redirectUrl : $ssoUrl;
-            Util::redirect($url);
-        }
-
-        if(\OC_User::isLoggedIn()) {
-            return ;
-        }
-
-        if(!$userInfo->send(array("token" => $this->getToken(), "userIp" => $this->getUserIp()))) {
-            return ;
-        }
 
         if($this->config->getValue("sso_multiple_region")) {
             Util::redirectRegion($userInfo, $this->config->getValue("sso_regions"), $this->config->getValue("sso_owncloud_url"), $this->getToken());
         }
 
-        if(!\OC_User::userExists($userInfo->getUserId())) {
+        if(!\OC_User::userExists($userInfo->getUserAccount())) {
             Util::firstLogin($userInfo, $this->getToken());
             Util::redirect($this->redirectUrl);
         }
         else {
-            Util::login($userInfo->getUserId(), $this->getToken());
+            Util::login($userInfo->getUserAccount(), $this->getToken());
         
             if($this->request->getHeader("ORIGIN")) {
                 return;

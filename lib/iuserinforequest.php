@@ -12,6 +12,13 @@ interface IUserInfoRequest extends ISingleSignOnRequest {
     public function getUserId();
 
     /**
+     * Getter for UserAccount
+     *
+     * @var string
+     */
+    public function getUserAccount();
+
+    /**
      * Getter for Email
      *
      * @return string
@@ -42,4 +49,12 @@ interface IUserInfoRequest extends ISingleSignOnRequest {
      * @author Dauba
      */
     public function getRegion();
+
+    /**
+     * Check user permission
+     *
+     * @return bool
+     * @author Dauba
+     */
+    public function hasPermission();
 }

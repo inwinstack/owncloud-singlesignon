@@ -3,9 +3,11 @@ namespace OCA\SingleSignOn;
 
 class GetInfo implements IUserInfoRequest {
     private $soapClient;
+    private $userAccount;
     private $userId;
     private $email;
     private $groups = array();
+    private $userGroup;
     private $displayName;
     private $errorMsg;
 
@@ -25,12 +27,14 @@ class GetInfo implements IUserInfoRequest {
             return false;
         }
 
-	$info = $result->return->ActXML->RsInfo->User;
+        $info = $result->return->ActXML->RsInfo->User;
 
         $this->userId = $info->UserId;
+        $this->userAccount = $info->UserAccount;
         $this->email = $info->Email;
         $this->displayName = $info->CName;
         $this->userSid = $info->UserSid;
+        $this->userGroup = $info->UserGroup;
 
         return true;
     }
@@ -41,6 +45,10 @@ class GetInfo implements IUserInfoRequest {
 
     public function getUserId() {
         return $this->userId;
+    }
+
+    public function getUserAccount() {
+        return $this->userAccount;
     }
 
     public function getEmail() {
@@ -55,6 +63,7 @@ class GetInfo implements IUserInfoRequest {
         return $this->displayName;
     }
 
+
     /**
      * Getter for userSid
      *
@@ -62,5 +71,18 @@ class GetInfo implements IUserInfoRequest {
      */
     public function getRegion() {
         return $this->userSid;
+    }
+
+    /**
+     * Check user have permassion to use the service or not
+     *
+     * @return bool
+     */
+    public function hasPermission(){
+        if ($this->userGroup == "T" || $this->userGroup == "S") {
+            return true;
+        }
+
+        return false;
     }
 }

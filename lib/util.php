@@ -23,11 +23,11 @@ class Util {
     public static function firstLogin($userInfo, $token) {
         $password = RequestManager::getRequest(ISingleSignOnRequest::USERPASSWORDGENERATOR) ? RequestManager::send(ISingleSignOnRequest::USERPASSWORDGENERATOR) : $userInfo->getUserId();
 
-        \OC_User::createUser($userInfo->getUserId(), $password);
+        \OC_User::createUser($userInfo->getUserAccount(), $password);
         \OC_User::setDisplayName($userInfo->getUserId(), $userInfo->getDisplayName());
-        \OC::$server->getConfig()->setUserValue($userInfo->getUserId(), "settings", "email", $userInfo->getEmail());
+        \OC::$server->getConfig()->setUserValue($userInfo->getUserAccount(), "settings", "email", $userInfo->getEmail());
         \OC::$server->getSession()->set("sso_token", $token);
-        return \OC_User::login($userInfo->getUserId(), $password);
+        return \OC_User::login($userInfo->getUserAccount(), $password);
     }
 
     public static function webDavLogin($username, $password) {
@@ -46,12 +46,12 @@ class Util {
             return ;
         }
         
-        if(!\OC_User::userExists($userInfo->getUserId())) {
+        if(!\OC_User::userExists($userInfo->getUserAccount())) {
             return self::firstLogin($userInfo, $token);
         }
 
         if($token){
-            return self::login($userInfo->getUserId(), $token);
+            return self::login($userInfo->getUserAccount(), $token);
         }
 
         return false;
