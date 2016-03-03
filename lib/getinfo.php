@@ -31,7 +31,7 @@ class GetInfo implements IUserInfoRequest {
 
         $this->userId = $info->UserId;
         $this->userAccount = $info->UserAccount;
-        $this->email = $info->Email;
+        $this->email = $info->UserEmail;
         $this->displayName = $info->CName;
         $this->userSid = $info->UserSid;
         $this->userGroup = $info->UserGroup;
