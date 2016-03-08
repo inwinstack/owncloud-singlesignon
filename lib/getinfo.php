@@ -3,7 +3,6 @@ namespace OCA\SingleSignOn;
 
 class GetInfo implements IUserInfoRequest {
     private $soapClient;
-    private $userAccount;
     private $userId;
     private $email;
     private $groups = array();
@@ -29,8 +28,7 @@ class GetInfo implements IUserInfoRequest {
 
         $info = $result->return->ActXML->RsInfo->User;
 
-        $this->userId = $info->UserId;
-        $this->userAccount = $info->UserAccount;
+        $this->userId = $info->UserAccount;
         $this->email = $info->UserEmail;
         $this->displayName = $info->CName;
         $this->userSid = $info->UserSid;
@@ -45,10 +43,6 @@ class GetInfo implements IUserInfoRequest {
 
     public function getUserId() {
         return $this->userId;
-    }
-
-    public function getUserAccount() {
-        return $this->userAccount;
     }
 
     public function getEmail() {

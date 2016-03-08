@@ -12,13 +12,6 @@ interface IUserInfoRequest extends ISingleSignOnRequest {
     public function getUserId();
 
     /**
-     * Getter for UserAccount
-     *
-     * @var string
-     */
-    public function getUserAccount();
-
-    /**
      * Getter for Email
      *
      * @return string

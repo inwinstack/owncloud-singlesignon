@@ -170,12 +170,12 @@ class SingleSignOnProcessor {
             Util::redirectRegion($userInfo, $this->config->getValue("sso_regions"), $this->config->getValue("sso_owncloud_url"), $this->getToken());
         }
 
-        if(!\OC_User::userExists($userInfo->getUserAccount())) {
+        if(!\OC_User::userExists($userInfo->getUserId())) {
             Util::firstLogin($userInfo, $this->getToken());
             Util::redirect($this->redirectUrl);
         }
         else {
-            Util::login($userInfo->getUserAccount(), $this->getToken());
+            Util::login($userInfo->getUserId(), $this->getToken());
         
             if($this->request->getHeader("ORIGIN")) {
                 return;
