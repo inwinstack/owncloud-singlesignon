@@ -172,6 +172,9 @@ class SingleSignOnProcessor {
 
         if(!\OC_User::userExists($userInfo->getUserId())) {
             Util::firstLogin($userInfo, $this->getToken());
+            if($this->request->getHeader("ORIGIN")) {
+                return;
+            }
             Util::redirect($this->redirectUrl);
         }
         else {
