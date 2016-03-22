@@ -19,7 +19,7 @@ class APIServerConnection implements IAPIServerConnection {
      * @param mixed 
      */
     public function __construct($serverUrl) {
-        $this->connection = new \SoapClient('https://sso.cloud.edu.tw/ORG/service/SSOServiceX?wsdl');
+        $this->connection = new \SoapClient(NULL, array("location" => $serverUrl . "api/server.php", "uri" => $serverUrl));
     }
     
     /**
