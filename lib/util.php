@@ -78,9 +78,9 @@ class Util {
 
         preg_match("/.*(\?.*)$/", $request->getRequestUri(), $param);
 
-        $redirectUrl = $serverUrls[$regions[$region]] . $param[1];
+        $redirectUrl = $serverUrls[$regions[$region]] . "/" . $param[1];
 
-        preg_match("/https*:\/\/(.*)\//", $redirectUrl, $url);
+        preg_match("/(.*)\//", $redirectUrl, $url);
 
         if($request->getServerHost() === $url[1]) {
             return ;

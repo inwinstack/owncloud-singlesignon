@@ -64,7 +64,7 @@ class GetInfo implements IUserInfoRequest {
      * @return string userSid
      */
     public function getRegion() {
-        return $this->userSid;
+        return (int)substr($this->userSid,0,2);
     }
 
     /**
