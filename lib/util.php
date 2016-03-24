@@ -80,7 +80,7 @@ class Util {
             return ;
         }
 
-        $redirectUrl = $serverUrls[$regions[$region]] . $request->getRequestUri();
+        $redirectUrl = $request->getServerProtocol() . "://" .$serverUrls[$regions[$region]] . $request->getRequestUri();
 
         self::redirect($redirectUrl);
     }
