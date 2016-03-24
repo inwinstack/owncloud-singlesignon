@@ -76,15 +76,11 @@ class Util {
         $region = $userInfo->getRegion();
         $request = \OC::$server->getRequest();
 
-        preg_match("/.*(\?.*)$/", $request->getRequestUri(), $param);
-
-        $redirectUrl = $serverUrls[$regions[$region]] . "/" . $param[1];
-
-        preg_match("/(.*)\//", $redirectUrl, $url);
-
-        if($request->getServerHost() === $url[1]) {
+        if($request->getServerHost() === $serverUrls[$regions[$region]]) {
             return ;
         }
+
+        $redirectUrl = $serverUrls[$regions[$region]] . $request->getRequestUri();
 
         self::redirect($redirectUrl);
     }
