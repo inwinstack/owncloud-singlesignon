@@ -39,7 +39,6 @@ class CollaborationApiController extends ApiController {
     public function getFileList($dir = null, $sortby = 'name', $sort = false){
         \OCP\JSON::checkLoggedIn();
         \OC::$server->getSession()->close();
-        $l = \OC::$server->getL10N('files');
 
         // Load the files
         $dir = $dir ? (string)$dir : '';
@@ -88,7 +87,7 @@ class CollaborationApiController extends ApiController {
                 array(
                     'data' => array(
                         'exception' => '\OCP\Files\StorageNotAvailableException',
-                        'message' => $l->t('Storage not available')
+                        'message' => 'Storage not available'
                     ),
                     'status' => 'error'
                 )
@@ -99,7 +98,7 @@ class CollaborationApiController extends ApiController {
                 array(
                     'data' => array(
                         'exception' => '\OCP\Files\StorageInvalidException',
-                        'message' => $l->t('Storage invalid')
+                        'message' => 'Storage invalid'
                     ),
                     'status' => 'error'
                 )
@@ -110,13 +109,171 @@ class CollaborationApiController extends ApiController {
                 array(
                     'data' => array(
                         'exception' => '\Exception',
-                        'message' => $l->t('Unknown error')
+                        'message' => 'Unknown error'
                     ),
                     'status' => 'error'
                 )
             );
         }
     }
+    
+    /**
+	 * @NoAdminRequired
+	 * @NoCSRFRequired
+     * @SSOCORS
+	 */
+    public function upload($dir = '/') {
+        \OC::$server->getSession()->close();
+        
+        // Firefox and Konqueror tries to download application/json for me.  --Arthur
+        \OCP\JSON::setContentTypeHeader('text/plain');
+
+        // If a directory token is sent along check if public upload is permitted.
+        // If not, check the login.
+        // If no token is sent along, rely on login only
+
+        $allowedPermissions = \OCP\Constants::PERMISSION_ALL;
+        $errorCode = null;
+        
+        if(\OC\Files\Filesystem::file_exists($dir) === false) {
+            return new DataResponse(
+                array(
+                'data' => array_merge(array('message' => 'Invalid directory.')),
+                'status' => 'error'
+                )
+            );
+        }
+        // get array with current storage stats (e.g. max file size)
+        $storageStats = \OCA\Files\Helper::buildFileStorageStatistics($dir);
+        
+        $files = $this->request->getUploadedFile('files');
+
+        if (!isset($files)) {
+            return new DataResponse(
+                array(
+                    'data' => array_merge(array('message' => 'No file was uploaded. Unknown error'), $storageStats),
+                    'status' => 'error'
+                )
+            );
+        }
+
+        foreach ($files['error'] as $error) {
+            if ($error != 0) {
+                $errors = array(
+                    UPLOAD_ERR_OK => 'There is no error, the file uploaded with success',
+                    UPLOAD_ERR_INI_SIZE => 'The uploaded file exceeds the upload_max_filesize directive in php.ini: '
+                    . ini_get('upload_max_filesize'),
+                    UPLOAD_ERR_FORM_SIZE => 'The uploaded file exceeds the MAX_FILE_SIZE directive that was specified in the HTML form',
+                    UPLOAD_ERR_PARTIAL => 'The uploaded file was only partially uploaded',
+                    UPLOAD_ERR_NO_FILE => 'No file was uploaded',
+                    UPLOAD_ERR_NO_TMP_DIR => 'Missing a temporary folder',
+                    UPLOAD_ERR_CANT_WRITE => 'Failed to write to disk',
+                );
+                $errorMessage = $errors[$error];
+                \OC::$server->getLogger()->alert("Upload error: $error - $errorMessage", array('app' => 'files'));
+                return new DataResponse(
+                    array(
+                        'data' => array_merge(array('message' => $errorMessage), $storageStats),
+                        'status' => 'error'
+                    )
+                );
+            }
+        }
+
+        $error = false;
+
+        $maxUploadFileSize = $storageStats['uploadMaxFilesize'];
+        $maxHumanFileSize = \OCP\Util::humanFileSize($maxUploadFileSize);
+
+        $totalSize = 0;
+        foreach ($files['size'] as $size) {
+            $totalSize += $size;
+        }
+        if ($maxUploadFileSize >= 0 and $totalSize > $maxUploadFileSize) {
+            return new DataResponse(
+                array(
+                    'data' => array('message' => 'Not enough storage available',
+                    'uploadMaxFilesize' => $maxUploadFileSize,
+                '   maxHumanFilesize' => $maxHumanFileSize),
+                    'status' => 'error'
+                )
+            );
+        }
+
+        $result = array();
+        $fileCount = count($files['name']);
+        for ($i = 0; $i < $fileCount; $i++) {
+            // target directory for when uploading folders
+            $relativePath = '';
+                
+            $target = \OC\Files\Filesystem::normalizePath($dir . $relativePath.'/'.$files['name'][$i]);
+
+            // relative dir to return to the client
+            if (isset($publicDirectory)) {
+                // path relative to the public root
+                $returnedDir = $publicDirectory . $relativePath;
+            } else {
+                // full path
+                $returnedDir = $dir . $relativePath;
+            }
+            $returnedDir = \OC\Files\Filesystem::normalizePath($returnedDir);
+
+
+            $exists = \OC\Files\Filesystem::file_exists($target);
+            if ($exists) {
+                $target = \OCP\Files::buildNotExistingFileName($dir . $relativePath, $files['name'][$i]);
+            }
+            try
+            {
+                if (is_uploaded_file($files['tmp_name'][$i]) and \OC\Files\Filesystem::fromTmpFile($files['tmp_name'][$i], $target)) {
+
+                    // updated max file size after upload
+                    $storageStats = \OCA\Files\Helper::buildFileStorageStatistics($dir);
+
+                    $meta = \OC\Files\Filesystem::getFileInfo($target);
+                    if ($meta === false) {
+                        $error = 'The target folder has been moved or deleted.';
+                        $errorCode = 'targetnotfound';
+                    } else {
+                        $data = \OCA\Files\Helper::formatFileInfo($meta);
+                        $data['originalname'] = $files['name'][$i];
+                        $data['uploadMaxFilesize'] = $maxUploadFileSize;
+                        $data['maxHumanFilesize'] = $maxHumanFileSize;
+                        $data['permissions'] = $meta['permissions'] & $allowedPermissions;
+                        $data['directory'] = $returnedDir;
+                        $result[] = $data;
+                    }
+
+                } else {
+                    $error = 'Upload failed. Could not find uploaded file';
+                }
+            } catch(Exception $ex) {
+                $error = $ex->getMessage();
+            }
+
+        }
+
+        if ($error === false) {
+            $result = \OCP\JSON::encode($result);
+            return new DataResponse(
+                array(
+                    'data' => $result,
+                    'status' => 'success'
+                )
+            );
+        } else {
+            return new DataResponse(
+                array(
+                    'data' => array_merge(array('message' => $error, 'code' => $errorCode), $storageStats),
+                    'status' => 'error'
+                )
+            );
+
+        }
+    }
+    
+
+
 
     /**
 	 * @NoAdminRequired
