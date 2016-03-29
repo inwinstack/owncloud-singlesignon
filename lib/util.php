@@ -45,6 +45,10 @@ class Util {
         if(!$userInfo->send(array("token" => $token, "userIp" => $data["userIp"]))) {
             return ;
         }
+
+        if($config->getValue("sso_multiple_region")) {
+            Util::redirectRegion($userInfo, $config->getValue("sso_regions"), $config->getValue("sso_owncloud_url"), $token);
+        }
         
         if(!\OC_User::userExists($userInfo->getUserId())) {
             return self::firstLogin($userInfo, $token);
