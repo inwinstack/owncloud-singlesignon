@@ -3,7 +3,7 @@ namespace OCA\SingleSignOn;
 
 use Exception;
 
-class RequestManager {
+class RequestManager implements IRequestManager{
     private static $serverConnection;
     private static $requests = array();
 
