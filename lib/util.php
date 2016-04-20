@@ -2,36 +2,37 @@
 namespace OCA\SingleSignOn;
 
 class Util {
-    public static function login($username, $token) {
+    public static function login($userInfo, $authInfo) {
+        $userName = $userInfo->getUserId();
         $manager = \OC::$server->getUserManager();
-        $manager->emit('\OC\User', 'preLogin', array($username, $token));
+        $manager->emit('\OC\User', 'preLogin', array($userName, $token));
 
-        $user = $manager->get($username);
+        $user = $manager->get($userName);
         \OC::$server->getUserSession()->setUser($user);
         \OC::$server->getUserSession()->setLoginName($user);
-        \OC::$server->getSession()->set("sso_token", $token);
-
-        \OC_Util::setupFS($username);
-        \OC::$server->getUserFolder($username);
+        \OC_Util::setupFS($userName);
+        \OC::$server->getUserFolder($userName);
 
         $manager->emit('\OC\User', 'postLogin', array($user, $token));
 
+        self::wirteAuthInfoToSession($authInfo);
 
         return true;
     }
 
-    public static function firstLogin($userInfo, $token) {
-        $password = RequestManager::getRequest(ISingleSignOnRequest::USERPASSWORDGENERATOR) ? RequestManager::send(ISingleSignOnRequest::USERPASSWORDGENERATOR) : $userInfo->getUserId();
+    public static function firstLogin($userInfo, $authInfo) {
+        $userName = $userInfo->getUserId();
+        $password = RequestManager::getRequest(ISingleSignOnRequest::USERPASSWORDGENERATOR) ? RequestManager::send(ISingleSignOnRequest::USERPASSWORDGENERATOR) : $userName;
 
-        \OC_User::createUser($userInfo->getUserId(), $password);
-        \OC_User::setDisplayName($userInfo->getUserId(), $userInfo->getDisplayName());
-        \OC::$server->getConfig()->setUserValue($userInfo->getUserId(), "settings", "email", $userInfo->getEmail());
-        \OC::$server->getSession()->set("sso_token", $token);
-        return \OC_User::login($userInfo->getUserId(), $password);
+        \OC_User::createUser($userName, $password);
+        \OC_User::setDisplayName($userName, $userInfo->getDisplayName());
+        \OC::$server->getConfig()->setUserValue($userName, "settings", "email", $userInfo->getEmail());
+        self::wirteAuthInfoToSession($authInfo);
+        return \OC_User::login($userName, $password);
     }
 
-    public static function webDavLogin($username, $password) {
-        $data["userId"] = $username;
+    public static function webDavLogin($userName, $password) {
+        $data["userId"] = $userName;
         $data["password"] = $password;
         $data["userIp"] = \OC::$server->getRequest()->getRemoteAddress();
 
@@ -42,7 +43,7 @@ class Util {
 
         $userInfo = RequestManager::getRequest(ISingleSignOnRequest::INFO);
 
-        if(!$userInfo->send(array("token" => $token, "userIp" => $data["userIp"]))) {
+        if(!$userInfo->send(array("token1" => $token, "userIp" => $data["userIp"]))) {
             return ;
         }
 
@@ -55,7 +56,7 @@ class Util {
         }
 
         if($token){
-            return self::login($userInfo->getUserId(), $token);
+            return self::login($userInfo, $token);
         }
 
         return false;
@@ -87,5 +88,18 @@ class Util {
         $redirectUrl = $request->getServerProtocol() . "://" .$serverUrls[$regions[$region]] . $request->getRequestUri();
 
         self::redirect($redirectUrl);
+    }
+
+    /**
+     * Write auth info to session
+     *
+     * @param array $authInfo
+     * @return void
+     */
+    public static function wirteAuthInfoToSession($authInfo)
+    {
+        foreach ($authInfo as $key => $value) {
+            \OC::$server->getSession()->set("sso_" . $key, $value);
+        }
     }
 }

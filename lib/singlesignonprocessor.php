@@ -46,11 +46,6 @@ class SingleSignOnProcessor {
     private $token;
 
     /**
-     * user ip
-     */
-    private $userIp;
-
-    /**
      * url where to redirect after SSO login
      */
     private $redirectUrl;
@@ -69,6 +64,8 @@ class SingleSignOnProcessor {
     }
 
     public function __construct() {
+        $this->redirectUrl = \OC_Util::getDefaultPageUrl();
+        $this->request = \OC::$server->getRequest();
         $this->config = \OC::$server->getSystemConfig();
         $this->authMathod = $this->config->getValue("sso_auth_method");
 
@@ -86,25 +83,7 @@ class SingleSignOnProcessor {
 
         self::checkKeyExist(self::$requiredKeys);
 
-        $this->request = \OC::$server->getRequest();
-        $this->userIp = $this->request->getRemoteAddress();
-        $this->redirectUrl = \OC_Util::getDefaultPageUrl();
-
-        if($this->request->offsetGet($this->config->getValue("sso_url_token_key"))) {
-            $this->token = $this->request->offsetGet($this->config->getValue("sso_url_token_key"));
-        }
-        else if($this->request->getCookie($this->config->getValue("sso_cookie_token_key"))) {
-            $this->token = $this->request->getCookie($this->config->getValue("sso_cookie_token_key"));
-        }
-        else if($this->request->getHeader("SSO-Token")){
-            $this->token = $this->request->getHeader("SSO-Token");
-        }
-        else if(\OC::$server->getSession()->exists("sso_token")) {
-            $this->token = \OC::$server->getSession()->get("sso_token");
-        }
-        else {
-            $this->token = null;
-        }
+        AuthInfo::init();
 
         RequestManager::init($this->config->getValue("sso_portal_url"), $this->config->getValue("sso_requests"));
     }
@@ -112,6 +91,7 @@ class SingleSignOnProcessor {
     public function process() {
         $ssoUrl = $this->config->getValue("sso_login_url");
         $userInfo = RequestManager::getRequest(ISingleSignOnRequest::INFO);
+        $authInfo = AuthInfo::get();
 
         if($this->unnecessaryAuth($this->request->getRequestUri())){
             return;
@@ -119,13 +99,13 @@ class SingleSignOnProcessor {
 
         if(isset($_GET["logout"]) && $_GET["logout"] == "true") {
             if($this->config->getValue("sso_global_logout")) {
-                RequestManager::send(ISingleSignOnRequest::INVALIDTOKEN,  array("token" => $this->getToken()));
+                RequestManager::send(ISingleSignOnRequest::INVALIDTOKEN, $authInfo);
             }
             \OC_User::logout();
             Util::redirect($ssoUrl . $this->config->getValue("sso_return_url_key") . $this->redirectUrl);
         }
 
-        if((\OC_User::isLoggedIn() && !$this->getToken())) {
+        if(\OC_User::isLoggedIn() && !$authInfo) {
             header("HTTP/1.1 " . \OCP\AppFramework\Http::STATUS_UNAUTHORIZED);
             header("Status: " . \OCP\AppFramework\Http::STATUS_UNAUTHORIZED);
             header("WWW-Authenticate: ");
@@ -136,7 +116,7 @@ class SingleSignOnProcessor {
             die();
         }
 
-        if(\OC_User::isLoggedIn() && (!RequestManager::send(ISingleSignOnRequest::VALIDTOKEN, array("token" => $this->getToken(), "userIp" => $this->getUserIp())))) {
+        if(\OC_User::isLoggedIn() && !RequestManager::send(ISingleSignOnRequest::VALIDTOKEN, $authInfo)) {
             header("HTTP/1.1 " . \OCP\AppFramework\Http::STATUS_UNAUTHORIZED);
             header("Status: " . \OCP\AppFramework\Http::STATUS_UNAUTHORIZED); header("WWW-Authenticate: "); header("Retry-After: 120");
 
@@ -145,7 +125,7 @@ class SingleSignOnProcessor {
             die();
         }
 
-        if(!$this->getToken() || !RequestManager::send(ISingleSignOnRequest::VALIDTOKEN, array("token" => $this->getToken(), "userIp" => $this->getUserIp()))) {
+        if(!$authInfo || !RequestManager::send(ISingleSignOnRequest::VALIDTOKEN, $authInfo)) {
             $url = ($this->redirectUrl) ? $ssoUrl . $this->config->getValue("sso_return_url_key") . $this->redirectUrl : $ssoUrl;
             Util::redirect($url);
         }
@@ -154,7 +134,7 @@ class SingleSignOnProcessor {
             return ;
         }
 
-        if(empty($ssoUrl) || !$userInfo->send(array("token" => $this->getToken(), "userIp" => $this->getUserIp())) || !$userInfo->hasPermission()) {
+        if(empty($ssoUrl) || !$userInfo->send($authInfo) || !$userInfo->hasPermission()) {
             header("HTTP/1.1 " . \OCP\AppFramework\Http::STATUS_UNAUTHORIZED);
             header("Status: " . \OCP\AppFramework\Http::STATUS_UNAUTHORIZED);
             header("WWW-Authenticate: ");
@@ -165,20 +145,19 @@ class SingleSignOnProcessor {
             die();
         }
 
-
         if($this->config->getValue("sso_multiple_region")) {
             Util::redirectRegion($userInfo, $this->config->getValue("sso_regions"), $this->config->getValue("sso_owncloud_url"), $this->getToken());
         }
 
         if(!\OC_User::userExists($userInfo->getUserId())) {
-            Util::firstLogin($userInfo, $this->getToken());
+            Util::firstLogin($userInfo, $authInfo);
             if($this->request->getHeader("ORIGIN")) {
                 return;
             }
             Util::redirect($this->redirectUrl);
         }
         else {
-            Util::login($userInfo->getUserId(), $this->getToken());
+            Util::login($userInfo, $authInfo);
         
             if($this->request->getHeader("ORIGIN")) {
                 return;
@@ -263,14 +242,5 @@ class SingleSignOnProcessor {
      */
     public function getToken() {
         return $this->token;
-    }
-    
-    /**
-     * Get the user ip
-     *
-     * @return string user ip
-     */
-    public function getUserIp() {
-        return $this->userIp;
     }
 }

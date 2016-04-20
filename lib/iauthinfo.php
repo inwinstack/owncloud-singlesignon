@@ -3,10 +3,10 @@
 namespace OCA\SingleSignOn;
 
 /**
- * Interface IGetAuthInfo
+ * Interface IAuthInfo
  * @author Dauba
  */
-interface IGetAuthInfo
+interface IAuthInfo
 {
     /**
      * set auth info
@@ -14,7 +14,7 @@ interface IGetAuthInfo
      * @return void
      * @author Dauba
      */
-    public function setInfo();
+    public static function init();
     
     /**
      * get auth info
@@ -22,5 +22,5 @@ interface IGetAuthInfo
      * @return array
      * @author Dauba
      */
-    public function getInfo();                                                                                                              
+    public static function get();                                                                                                              
 }
