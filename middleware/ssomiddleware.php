@@ -2,6 +2,7 @@
 
 namespace OCA\SingleSignOn\Middleware;
 
+use OCA\SingleSignOn\AuthInfo;
 use OC\AppFramework\Utility\ControllerMethodReflector;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
@@ -62,16 +63,16 @@ class SSOMiddleware extends Middleware {
 		// with session authentication since this enables CSRF attack vectors
         if ($this->reflector->hasAnnotation('SSOCORS') &&
 			!$this->reflector->hasAnnotation('PublicPage')) {
-			$token = \OC::$server->getSession()->get("sso_token");
-            $userIp = $this->request->getRemoteAddress();
-            $tokenVaildator = \OCA\SingleSignOn\RequestManager::send(\OCA\SingleSignOn\ISingleSignOnRequest::VALIDTOKEN, array("token" => $token, "userIp" => $userIp));
+            AuthInfo::init();
+            $authInfo = AuthInfo::get();
+            $tokenVaildator = \OCA\SingleSignOn\RequestManager::send(\OCA\SingleSignOn\ISingleSignOnRequest::VALIDTOKEN, $authInfo);
             if (!$tokenVaildator) { 
 				throw new SecurityException('Token expired!', Http::STATUS_UNAUTHORIZED);
             }
             $userInfo = \OCA\SingleSignOn\RequestManager::getRequest(\OCA\SingleSignOn\ISingleSignOnRequest::INFO);
 
 			$this->session->logout();
-			if(!\OCA\SingleSignOn\Util::login($userInfo->getUserId(), $token)) {
+			if(!\OCA\SingleSignOn\Util::login($userInfo,$authInfo)) {
 				throw new SecurityException('SSO CORS requires basic auth', Http::STATUS_UNAUTHORIZED);
 			}
 		}

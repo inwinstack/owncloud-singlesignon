@@ -29,5 +29,6 @@ return [
 	   ['name' => 'collaboration_api#shareLinks', 'url' => '/api/share', 'verb' => 'POST'],
 	   ['name' => 'collaboration_api#unshare', 'url' => '/api/unshare', 'verb' => 'POST'],
 	   ['name' => 'collaboration_api#upload', 'url' => '/api/upload', 'verb' => 'POST'],
+	   ['name' => 'collaboration_api#download', 'url' => '/api/download', 'verb' => 'GET'],
     ]
 ];
