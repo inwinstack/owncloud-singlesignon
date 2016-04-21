@@ -13,7 +13,6 @@ class RequestManager {
         }
 
         self::$serverConnection = new \OCA\SingleSignOn\APIServerConnection($serverUrl);
-        self::$serverConnection = self::$serverConnection->getConnection();
 
         foreach($requests as $request) {
             if(!class_exists($request)) {
