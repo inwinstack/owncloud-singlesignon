@@ -30,6 +30,14 @@ class SingleSignOnProcessor {
                                                 "(\/apps\/gallery\/.*)");
 
     /**
+     * Necessary class
+     *
+     * @var array
+     */
+    private $necessaryImplementationClass = array("\\OCA\\SingleSignOn\\AuthInfo",
+                                                  "\\OCA\\SingleSignOn\\APIServerConnection");
+
+    /**
      * \OC\SystemConfig
      */
     private $config;
@@ -65,6 +73,12 @@ class SingleSignOnProcessor {
         if($this->config->getValue("sso_multiple_region")) {
             array_push(self::$requiredKeys, "sso_owncloud_url");
             array_push(self::$requiredKeys, "sso_regions");
+        }
+
+        foreach($this->necessaryImplementationClass as $class) {
+            if(!class_exists($class)) {
+                throw new Exception("The class " . $class . " did't exist.");
+            }
         }
 
         self::checkKeyExist(self::$requiredKeys);
