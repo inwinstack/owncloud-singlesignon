@@ -9,7 +9,6 @@ class SingleSignOnProcessor {
      * required keys in config/config.php
      */
     private static $requiredKeys = array("sso_login_url",
-                                         "sso_auth_method",
                                          "sso_return_url_key",
                                          "sso_requests",
                                          "sso_portal_url",
@@ -50,11 +49,6 @@ class SingleSignOnProcessor {
      */
     private $redirectUrl;
 
-    /**
-     * SSO auth method
-     */ 
-    private $authMathod;
-    
     public function run() {
         try {
             $this->process();
@@ -67,18 +61,10 @@ class SingleSignOnProcessor {
         $this->redirectUrl = \OC_Util::getDefaultPageUrl();
         $this->request = \OC::$server->getRequest();
         $this->config = \OC::$server->getSystemConfig();
-        $this->authMathod = $this->config->getValue("sso_auth_method");
 
         if($this->config->getValue("sso_multiple_region")) {
             array_push(self::$requiredKeys, "sso_owncloud_url");
             array_push(self::$requiredKeys, "sso_regions");
-        }
-
-        if ($this->authMathod === "param") {
-            array_push(self::$requiredKeys, "sso_url_token_key");
-        }
-        else {
-            array_push(self::$requiredKeys, "sso_cookie_token_key");
         }
 
         self::checkKeyExist(self::$requiredKeys);
@@ -179,22 +165,6 @@ class SingleSignOnProcessor {
         foreach ($requiredKeys as $key) {
             if (!in_array($key, $configKeys)) {
                 throw new Exception("The config key " . $key . " did't exist.");
-            }
-        }
-    }
-
-    /**
-     * Check config value is empty or not.
-     *
-     * @param array reqiured keys
-     * @return void
-     **/
-    public static function checkConfigValueEmpty($requiredKeys) {
-        $config = \OC::$server->getSystemConfig();
-
-        foreach ($requiredKeys as $key) {
-            if (!$config->getValue($key)) {
-                throw new Exception("The config value " . $key . " is empty.");
             }
         }
     }
