@@ -5,9 +5,8 @@ namespace OCA\SingleSignOn;
 interface ISingleSignOnRequest {
     const VALIDTOKEN = "validtoken";
     const INFO = "info";
-    const AUTH = "auth";
-    const INVALIDTOKEN = "invalidtoken";
     const USERPASSWORDGENERATOR = "userpasswordgenerator";
+    const INVALIDTOKEN = "invalidtoken";
     const GETTOKEN = "gettoken";
 
     public function name();
