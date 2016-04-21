@@ -9,4 +9,5 @@ namespace OCA\SingleSignOn;
 interface IAPIServerConnection
 {
     public function getConnection();                                                                                                              
+    public function getServerUrl();                                                                                                              
 }
