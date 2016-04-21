@@ -3,17 +3,17 @@ namespace OCA\SingleSignOn;
 
 class Util {
     public static function login($userInfo, $authInfo) {
-        $userName = $userInfo->getUserId();
+        $userID = $userInfo->getUserId();
         $manager = \OC::$server->getUserManager();
-        $manager->emit('\OC\User', 'preLogin', array($userName, $token));
+        $manager->emit('\OC\User', 'preLogin', array($userID, $token));
 
-        $user = $manager->get($userName);
+        $user = $manager->get($userID);
         \OC::$server->getUserSession()->setUser($user);
         \OC::$server->getUserSession()->setLoginName($user);
-        \OC_Util::setupFS($userName);
-        \OC::$server->getUserFolder($userName);
+        \OC_Util::setupFS($userID);
+        \OC::$server->getUserFolder($userID);
 
-        $manager->emit('\OC\User', 'postLogin', array($user, $token));
+        $manager->emit('\OC\User', 'postLogin', array($userID, $token));
 
         self::wirteAuthInfoToSession($authInfo);
 
@@ -21,18 +21,18 @@ class Util {
     }
 
     public static function firstLogin($userInfo, $authInfo) {
-        $userName = $userInfo->getUserId();
-        $password = RequestManager::getRequest(ISingleSignOnRequest::USERPASSWORDGENERATOR) ? RequestManager::send(ISingleSignOnRequest::USERPASSWORDGENERATOR) : $userName;
+        $userID = $userInfo->getUserId();
+        $password = RequestManager::getRequest(ISingleSignOnRequest::USERPASSWORDGENERATOR) ? RequestManager::send(ISingleSignOnRequest::USERPASSWORDGENERATOR) : $userID;
 
-        \OC_User::createUser($userName, $password);
-        \OC_User::setDisplayName($userName, $userInfo->getDisplayName());
-        \OC::$server->getConfig()->setUserValue($userName, "settings", "email", $userInfo->getEmail());
+        \OC_User::createUser($userID, $password);
+        \OC_User::setDisplayName($userID, $userInfo->getDisplayName());
+        \OC::$server->getConfig()->setUserValue($userID, "settings", "email", $userInfo->getEmail());
         self::wirteAuthInfoToSession($authInfo);
-        return \OC_User::login($userName, $password);
+        return \OC_User::login($userID, $password);
     }
 
-    public static function webDavLogin($userName, $password) {
-        $data["userId"] = $userName;
+    public static function webDavLogin($userID, $password) {
+        $data["userId"] = $userID;
         $data["password"] = $password;
         $data["userIp"] = \OC::$server->getRequest()->getRemoteAddress();
 
@@ -48,7 +48,7 @@ class Util {
         }
 
         if($config->getValue("sso_multiple_region")) {
-            Util::redirectRegion($userInfo, $config->getValue("sso_regions"), $config->getValue("sso_owncloud_url"), $token);
+            self::redirectRegion($userInfo, $config->getValue("sso_regions"), $config->getValue("sso_owncloud_url"), $token);
         }
         
         if(!\OC_User::userExists($userInfo->getUserId())) {
