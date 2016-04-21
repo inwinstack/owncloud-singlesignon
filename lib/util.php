@@ -5,7 +5,7 @@ class Util {
     public static function login($userInfo, $authInfo) {
         $userID = $userInfo->getUserId();
         $manager = \OC::$server->getUserManager();
-        $manager->emit('\OC\User', 'preLogin', array($userID, $token));
+        $manager->emit('\OC\User', 'preLogin', array($userID, $authInfo));
 
         $user = $manager->get($userID);
         \OC::$server->getUserSession()->setUser($user);
@@ -13,7 +13,7 @@ class Util {
         \OC_Util::setupFS($userID);
         \OC::$server->getUserFolder($userID);
 
-        $manager->emit('\OC\User', 'postLogin', array($userID, $token));
+        $manager->emit('\OC\User', 'postLogin', array($userID, $authInfo));
 
         self::wirteAuthInfoToSession($authInfo);
 
