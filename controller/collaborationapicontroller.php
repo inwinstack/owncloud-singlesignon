@@ -12,6 +12,7 @@
 namespace OCA\SingleSignOn\Controller;
 
 use OCP\AppFramework\Http\DataResponse;
+use OCP\AppFramework\Http\NotFoundResponse;
 use OCP\AppFramework\ApiController;
 use OCP\IRequest;
 
@@ -400,7 +401,28 @@ class CollaborationApiController extends ApiController {
             return new DataResponse(array('data' => $response, 'status' => 'error', 'message' => $error_msg));
         }
     }
-    
+
+    /**
+	 * @NoAdminRequired
+	 * @NoCSRFRequired
+     * @SSOCORS
+	 */
+    public function download($dir = null, $file = null) {
+        \OC::$server->getSession()->close();
+        
+        $exists = \OC\Files\Filesystem::file_exists($dir."/".$file);
+        if(!$exists) {
+            return new NotFoundResponse();
+        }
+        $files_list = json_decode($file);
+        // in case we get only a single file
+        if (!is_array($files_list)) {
+            $files_list = array($file);
+        }
+       
+        \OC_Files::get($dir, $files_list, $_SERVER['REQUEST_METHOD'] == 'HEAD');
+    }
+
 
     private static function generateShareLink($token) {
         $request = \OC::$server->getRequest();
