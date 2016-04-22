@@ -119,7 +119,9 @@ class SingleSignOnProcessor {
 
         if(\OC_User::isLoggedIn() && !RequestManager::send(ISingleSignOnRequest::VALIDTOKEN, $authInfo)) {
             header("HTTP/1.1 " . \OCP\AppFramework\Http::STATUS_UNAUTHORIZED);
-            header("Status: " . \OCP\AppFramework\Http::STATUS_UNAUTHORIZED); header("WWW-Authenticate: "); header("Retry-After: 120");
+            header("Status: " . \OCP\AppFramework\Http::STATUS_UNAUTHORIZED); 
+            header("WWW-Authenticate: "); 
+            header("Retry-After: 120");
 
             $template = new \OC_Template("singlesignon", "tokenExpired", "guest");
             $template->printPage();
@@ -127,7 +129,7 @@ class SingleSignOnProcessor {
         }
 
         if(!$authInfo || !RequestManager::send(ISingleSignOnRequest::VALIDTOKEN, $authInfo)) {
-            $url = ($this->redirectUrl) ? $ssoUrl . $this->config->getValue("sso_return_url_key") . $this->redirectUrl : $ssoUrl;
+            $url = $this->redirectUrl ? $ssoUrl . $this->config->getValue("sso_return_url_key") . $this->redirectUrl : $ssoUrl;
             Util::redirect($url);
         }
 
