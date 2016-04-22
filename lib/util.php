@@ -4,8 +4,10 @@ namespace OCA\SingleSignOn;
 class Util {
     public static function login($userInfo, $authInfo) {
         $userID = $userInfo->getUserId();
+        $userToken = $userInfo->getToken();
         $manager = \OC::$server->getUserManager();
-        $manager->emit('\OC\User', 'preLogin', array($userID, $authInfo));
+
+        //$manager->emit('\OC\User', 'preLogin', array($userID, $userToken));
 
         $user = $manager->get($userID);
         \OC::$server->getUserSession()->setUser($user);
@@ -13,7 +15,7 @@ class Util {
         \OC_Util::setupFS($userID);
         \OC::$server->getUserFolder($userID);
 
-        $manager->emit('\OC\User', 'postLogin', array($userID, $authInfo));
+        $manager->emit('\OC\User', 'postLogin', array($user, $userToken));
 
         self::wirteAuthInfoToSession($authInfo);
 
@@ -32,18 +34,17 @@ class Util {
     }
 
     public static function webDavLogin($userID, $password) {
-        $data["userId"] = $userID;
-        $data["password"] = $password;
-        $data["userIp"] = \OC::$server->getRequest()->getRemoteAddress();
-
         $config = \OC::$server->getSystemConfig();
+
         RequestManager::init($config->getValue("sso_portal_url"), $config->getValue("sso_requests"));
 
-        $token = RequestManager::send(ISingleSignOnRequest::GETTOKEN, $data);
+        WebDavAuthInfo::init($userID, $password);
+
+        $authInfo = WebDavAuthInfo::get();
 
         $userInfo = RequestManager::getRequest(ISingleSignOnRequest::INFO);
 
-        if(!$userInfo->send(array("token1" => $token, "userIp" => $data["userIp"]))) {
+        if(!$userInfo->send($authInfo)) {
             return ;
         }
 
@@ -52,11 +53,11 @@ class Util {
         }
         
         if(!\OC_User::userExists($userInfo->getUserId())) {
-            return self::firstLogin($userInfo, $token);
+            return self::firstLogin($userInfo, $authInfo);
         }
 
-        if($token){
-            return self::login($userInfo, $token);
+        if($authInfo){
+            return self::login($userInfo, $authInfo);
         }
 
         return false;
