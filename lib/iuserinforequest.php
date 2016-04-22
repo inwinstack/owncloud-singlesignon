@@ -50,4 +50,12 @@ interface IUserInfoRequest extends ISingleSignOnRequest {
      * @author Dauba
      */
     public function hasPermission();
+
+    /**
+     * Get user auth token
+     *
+     * @return void
+     */
+    public function getToken();
+    
 }
