@@ -38,11 +38,11 @@ class Util {
 
         RequestManager::init($config->getValue("sso_portal_url"), $config->getValue("sso_requests"));
 
-        WebDavAuthInfo::init($userID, $password);
-
-        $authInfo = WebDavAuthInfo::get();
+        $authInfo = WebDavAuthInfo::get($userID, $password);
 
         $userInfo = RequestManager::getRequest(ISingleSignOnRequest::INFO);
+
+        $userInfo->setup(array("action" => "webDavLogin"));
 
         if(!$userInfo->send($authInfo)) {
             return ;
