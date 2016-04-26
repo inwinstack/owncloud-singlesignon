@@ -26,22 +26,6 @@ class RequestManager {
                 self::$requests[$request->name()] = $request;
             }
         }
-
-        if(!isset(self::$requests[ISingleSignOnRequest::VALIDTOKEN])) {
-            throw new Exception("VaildTokenRequest didn't registered");
-        }
-
-        if(!isset(self::$requests[ISingleSignOnRequest::INFO])) {
-            throw new Exception("GetInfoRequest didn't registered");
-        }
-
-        if(!isset(self::$requests[ISingleSignOnRequest::INVALIDTOKEN])) {
-            throw new Exception("InVaildTokenRequest didn't registered");
-        }
-
-        if(!isset(self::$requests[ISingleSignOnRequest::GETTOKEN])) {
-            throw new Exception("GetTokenRequest didn't registered");
-        }
     }
 
     public static function send($requestName, $data = array()) {
