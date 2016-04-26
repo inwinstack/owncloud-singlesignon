@@ -94,6 +94,12 @@ class SingleSignOnProcessor {
         $userInfo = RequestManager::getRequest(ISingleSignOnRequest::INFO);
         $authInfo = AuthInfo::get();
 
+        $userInfo->setup(array("action" => "webLogin"));
+
+        if(\OC_User::isLoggedIn() && $this->config->getValue("sso_one_time_password")) {
+            return;
+        }
+
         if($this->unnecessaryAuth($this->request->getRequestUri())){
             return;
         }
@@ -117,7 +123,7 @@ class SingleSignOnProcessor {
             die();
         }
 
-        if(\OC_User::isLoggedIn() && !RequestManager::send(ISingleSignOnRequest::VALIDTOKEN, $authInfo)) {
+        if(\OC_User::isLoggedIn() && (!RequestManager::send(ISingleSignOnRequest::VALIDTOKEN, $authInfo) && !$this->config->getValue("sso_one_time_password"))) {
             header("HTTP/1.1 " . \OCP\AppFramework\Http::STATUS_UNAUTHORIZED);
             header("Status: " . \OCP\AppFramework\Http::STATUS_UNAUTHORIZED); 
             header("WWW-Authenticate: "); 
@@ -128,7 +134,7 @@ class SingleSignOnProcessor {
             die();
         }
 
-        if(!$authInfo || !RequestManager::send(ISingleSignOnRequest::VALIDTOKEN, $authInfo)) {
+        if(!$authInfo || (!RequestManager::send(ISingleSignOnRequest::VALIDTOKEN, $authInfo) && !$this->config->getValue("sso_one_time_password"))) {
             $url = $this->redirectUrl ? $ssoUrl . $this->config->getValue("sso_return_url_key") . $this->redirectUrl : $ssoUrl;
             Util::redirect($url);
         }
