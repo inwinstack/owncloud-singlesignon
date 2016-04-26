@@ -2,6 +2,13 @@
 namespace OCA\SingleSignOn;
 
 interface IUserInfoRequest extends ISingleSignOnRequest {
+    /**
+     * setup userinfo
+     * @param array params
+     * @return void
+     * @author Dauba
+     **/
+    public function setup($params);
 
     /**
      * Getter for UserId
