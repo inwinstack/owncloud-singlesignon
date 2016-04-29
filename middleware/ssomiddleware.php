@@ -65,9 +65,11 @@ class SSOMiddleware extends Middleware {
 			!$this->reflector->hasAnnotation('PublicPage')) {
             AuthInfo::init();
             $authInfo = AuthInfo::get();
-            $tokenVaildator = \OCA\SingleSignOn\RequestManager::send(\OCA\SingleSignOn\ISingleSignOnRequest::VALIDTOKEN, $authInfo);
-            if (!$tokenVaildator) { 
-				throw new SecurityException('Token expired!', Http::STATUS_UNAUTHORIZED);
+            if(!\OC::$server->getSystemConfig()->getValue("sso_one_time_password")) {
+                $tokenVaildator = \OCA\SingleSignOn\RequestManager::send(\OCA\SingleSignOn\ISingleSignOnRequest::VALIDTOKEN, $authInfo);
+                if (!$tokenVaildator) { 
+                    throw new SecurityException('Token expired!', Http::STATUS_UNAUTHORIZED);
+                }
             }
             $userInfo = \OCA\SingleSignOn\RequestManager::getRequest(\OCA\SingleSignOn\ISingleSignOnRequest::INFO);
 
