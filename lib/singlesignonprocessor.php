@@ -151,6 +151,9 @@ class SingleSignOnProcessor {
 
             $template = new \OC_Template("singlesignon", "verificationFailure", "guest");
             $template->printPage();
+            if($userInfo->hasErrorMsg()) {
+                \OCP\Util::writeLog("Single Sign-On", $userInfo->getErrorMsg(), \OCP\Util::ERROR);
+            }
             die();
         }
 
