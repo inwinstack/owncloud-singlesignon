@@ -65,4 +65,11 @@ interface IUserInfoRequest extends ISingleSignOnRequest {
      */
     public function getToken();
     
+    /**
+     * Check has error message or not
+     *
+     * @return true|false
+     * @author Dauba
+     **/
+    public function hasErrorMsg();
 }
