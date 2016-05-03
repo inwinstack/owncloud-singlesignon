@@ -9,14 +9,6 @@ namespace OCA\SingleSignOn;
 interface IAuthInfo
 {
     /**
-     * set auth info
-     *
-     * @return void
-     * @author Dauba
-     */
-    public static function init();
-    
-    /**
      * get auth info
      *
      * @return array

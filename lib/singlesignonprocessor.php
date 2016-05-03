@@ -84,8 +84,6 @@ class SingleSignOnProcessor {
 
         self::checkKeyExist(self::$requiredKeys);
 
-        AuthInfo::init();
-
         RequestManager::init($this->config->getValue("sso_portal_url"), $this->config->getValue("sso_requests"));
     }
 
