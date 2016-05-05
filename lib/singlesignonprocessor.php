@@ -67,9 +67,9 @@ class SingleSignOnProcessor {
     }
 
     public function __construct() {
-        $this->redirectUrl = \OC_Util::getDefaultPageUrl();
         $this->request = \OC::$server->getRequest();
         $this->config = \OC::$server->getSystemConfig();
+        $this->redirectUrl = $this->request->getRequestUri();
 
         if($this->config->getValue("sso_multiple_region")) {
             array_push(self::$requiredKeys, "sso_owncloud_url");
@@ -156,7 +156,7 @@ class SingleSignOnProcessor {
         }
 
         if($this->config->getValue("sso_multiple_region")) {
-            Util::redirectRegion($userInfo, $this->config->getValue("sso_regions"), $this->config->getValue("sso_owncloud_url"), $this->getToken());
+            Util::redirectRegion($userInfo, $this->config->getValue("sso_regions"), $this->config->getValue("sso_owncloud_url"));
         }
 
         if(!\OC_User::userExists($userInfo->getUserId())) {

@@ -49,7 +49,7 @@ class Util {
         }
 
         if($config->getValue("sso_multiple_region")) {
-            self::redirectRegion($userInfo, $config->getValue("sso_regions"), $config->getValue("sso_owncloud_url"), $token);
+            self::redirectRegion($userInfo, $config->getValue("sso_regions"), $config->getValue("sso_owncloud_url"));
         }
         
         if(!\OC_User::userExists($userInfo->getUserId())) {
@@ -78,7 +78,7 @@ class Util {
      *
      * @return void
      */
-    public static function redirectRegion($userInfo, $regions, $serverUrls, $token) {
+    public static function redirectRegion($userInfo, $regions, $serverUrls) {
         $region = $userInfo->getRegion();
         $request = \OC::$server->getRequest();
 
