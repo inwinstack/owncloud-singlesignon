@@ -70,6 +70,7 @@ class SingleSignOnProcessor {
         $this->request = \OC::$server->getRequest();
         $this->config = \OC::$server->getSystemConfig();
         $this->redirectUrl = $this->request->getRequestUri();
+        $this->defaultPageUrl = \OC_Util::getDefaultPageUrl();
 
         if($this->config->getValue("sso_multiple_region")) {
             array_push(self::$requiredKeys, "sso_owncloud_url");
@@ -164,7 +165,7 @@ class SingleSignOnProcessor {
             if($this->request->getHeader("ORIGIN")) {
                 return;
             }
-            Util::redirect($this->redirectUrl);
+            Util::redirect($this->defaultPageUrl);
         }
         else {
             Util::login($userInfo, $authInfo);
@@ -173,7 +174,7 @@ class SingleSignOnProcessor {
                 return;
             }
 
-            Util::redirect($this->redirectUrl);
+            Util::redirect($this->defaultPageUrl);
         }
     }
 
