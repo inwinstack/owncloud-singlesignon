@@ -26,6 +26,7 @@ class SingleSignOnProcessor {
                                                 "(\/core\/js\/oc\.js)",
                                                 "(\/apps\/gallery\/config\.public)",
                                                 "(.*\/files_sharing\/ajax\/.*)",
+                                                "(.*\/files_sharing\/shareinfo.*)",
                                                 "(\/apps\/files_pdfviewer\/)",
                                                 "(\/apps\/gallery\/.*)");
 
