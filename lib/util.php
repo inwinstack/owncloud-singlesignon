@@ -1,6 +1,8 @@
 <?php
 namespace OCA\SingleSignOn;
 
+use Exception;
+
 class Util {
     public static function login($userInfo, $authInfo) {
         $userID = $userInfo->getUserId();
@@ -86,7 +88,7 @@ class Util {
             return ;
         }
 
-        $redirectUrl = $request->getServerProtocol() . "://" .$serverUrls[$regions[$region]] . $request->getRequestUri();
+        $redirectUrl = RedirectRegion::getRegionUrl($region);
 
         self::redirect($redirectUrl);
     }
