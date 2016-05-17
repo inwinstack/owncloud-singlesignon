@@ -37,7 +37,8 @@ class SingleSignOnProcessor {
      */
     private $necessaryImplementationClass = array("\\OCA\\SingleSignOn\\AuthInfo",
                                                   "\\OCA\\SingleSignOn\\APIServerConnection",
-                                                  "\\OCA\\SingleSignOn\\WebDavAuthInfo");
+                                                  "\\OCA\\SingleSignOn\\WebDavAuthInfo",
+                                                  "\\OCA\\SingleSignOn\\RedirectRegion");
 
     /**
      * \OC\SystemConfig
