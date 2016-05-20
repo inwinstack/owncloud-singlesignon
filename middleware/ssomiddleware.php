@@ -63,7 +63,6 @@ class SSOMiddleware extends Middleware {
 		// with session authentication since this enables CSRF attack vectors
         if ($this->reflector->hasAnnotation('SSOCORS') &&
 			!$this->reflector->hasAnnotation('PublicPage')) {
-            AuthInfo::init();
             $authInfo = AuthInfo::get();
             if(!\OC::$server->getSystemConfig()->getValue("sso_one_time_password")) {
                 $tokenVaildator = \OCA\SingleSignOn\RequestManager::send(\OCA\SingleSignOn\ISingleSignOnRequest::VALIDTOKEN, $authInfo);
