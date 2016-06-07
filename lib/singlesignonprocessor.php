@@ -97,20 +97,22 @@ class SingleSignOnProcessor {
 
         $userInfo->setup(array("action" => "webLogin"));
 
-        if(\OC_User::isLoggedIn() && $this->config->getValue("sso_one_time_password")) {
-            return;
-        }
-
         if($this->unnecessaryAuth($this->request->getRequestUri())){
             return;
-        }
+       }
 
         if(isset($_GET["logout"]) && $_GET["logout"] == "true") {
             if($this->config->getValue("sso_global_logout")) {
                 RequestManager::send(ISingleSignOnRequest::INVALIDTOKEN, $authInfo);
             }
             \OC_User::logout();
-            Util::redirect($ssoUrl . $this->config->getValue("sso_return_url_key") . $this->redirectUrl);
+            $template = new \OC_Template("singlesignon", "logout", "guest");
+            $template->printPage();
+            die();
+        }
+
+        if(\OC_User::isLoggedIn() && $this->config->getValue("sso_one_time_password")) {
+            return;
         }
 
         if(\OC_User::isLoggedIn() && !$authInfo) {

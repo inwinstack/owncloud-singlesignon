@@ -2,6 +2,8 @@
     "Token expired!":"Token 過期了！",
     "Redirect to login page":"重新導向到登入頁面",
     "You do not have permission to use ownCloud!":"您沒有權限使用儲存應用服務!",
+    "Logout success.":"成功登出了",
+    "Login again.":"再次登入",
     "Unauthorized actions":"未經授權的操作"
 },"pluralForm" :"nplurals=1; plural=0;"
 }
