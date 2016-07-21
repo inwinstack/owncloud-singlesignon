@@ -13,7 +13,9 @@ class SingleSignOnProcessor {
                                          "sso_requests",
                                          "sso_portal_url",
                                          "sso_global_logout",
-                                         "sso_multiple_region");
+                                         "sso_multiple_region",
+                                         "sso_admin_login_port",
+                                         "sso_admin_login_uri");
 
     /**
      * uri which unnecessary authenticate with Single Sign-On
@@ -60,6 +62,13 @@ class SingleSignOnProcessor {
      */
     private $redirectUrl;
 
+    /**
+     * user visit port on server
+     *
+     * @var int
+     */
+    private $visitPort;
+
     public function run() {
         try {
             $this->process();
@@ -73,6 +82,7 @@ class SingleSignOnProcessor {
         $this->config = \OC::$server->getSystemConfig();
         $this->redirectUrl = $this->request->getRequestUri();
         $this->defaultPageUrl = \OC_Util::getDefaultPageUrl();
+        $this->visitPort = (int)$_SERVER["SERVER_PORT"];
 
         if($this->config->getValue("sso_multiple_region")) {
             array_push(self::$requiredKeys, "sso_owncloud_url");
@@ -98,8 +108,12 @@ class SingleSignOnProcessor {
         $userInfo->setup(array("action" => "webLogin"));
 
         if($this->unnecessaryAuth($this->request->getRequestUri())){
+            $uri = substr($this->request->getRequestUri(), (-1)*strlen($this->config->getValue("sso_admin_login_uri")));
+            if ($uri === $this->config->getValue("sso_admin_login_uri") && $this->visitPort != $this->config->getValue("sso_admin_login_port")) {
+                Util::redirect($this->defaultPageUrl);
+            }
             return;
-       }
+        }
 
         if(isset($_GET["logout"]) && $_GET["logout"] == "true") {
             if($this->config->getValue("sso_global_logout")) {
