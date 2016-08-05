@@ -28,9 +28,12 @@ class Util {
         $userID = $userInfo->getUserId();
         $password = RequestManager::getRequest(ISingleSignOnRequest::USERPASSWORDGENERATOR) ? RequestManager::send(ISingleSignOnRequest::USERPASSWORDGENERATOR) : $userID;
 
-        \OC_User::createUser($userID, $password);
-        \OC_User::setDisplayName($userID, $userInfo->getDisplayName());
-        \OC::$server->getConfig()->setUserValue($userID, "settings", "email", $userInfo->getEmail());
+        $user = \OC_User::createUser($userID, $password);
+
+        if (class_exists('\\OCA\\SingleSignOn\\UserInfoSetter')) {
+            UserInfoSetter::setInfo($user, $userInfo);
+        }
+
         self::wirteAuthInfoToSession($authInfo);
         return \OC_User::login($userID, $password);
     }
