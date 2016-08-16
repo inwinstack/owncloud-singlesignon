@@ -17,6 +17,10 @@ class Util {
         \OC_Util::setupFS($userID);
         \OC::$server->getUserFolder($userID);
 
+        if (class_exists('\\OCA\\SingleSignOn\\UserInfoSetter')) {
+            UserInfoSetter::setInfo($user, $userInfo);
+        }
+
         $manager->emit('\OC\User', 'postLogin', array($user, $userToken));
 
         self::wirteAuthInfoToSession($authInfo);
