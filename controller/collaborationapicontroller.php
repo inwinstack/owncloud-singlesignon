@@ -182,8 +182,12 @@ class CollaborationApiController extends ApiController {
         }
 
         $error = false;
+        
+        $trashbin = \OC_Util::getTrashbinSize();
+        $versions = \OC_Util::getVersionsSize();
 
         $maxUploadFileSize = $storageStats['uploadMaxFilesize'];
+        $maxUploadFileSize -= ($trashbin + $versions);
         $maxHumanFileSize = \OCP\Util::humanFileSize($maxUploadFileSize);
 
         $totalSize = 0;
