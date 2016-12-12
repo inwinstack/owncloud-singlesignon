@@ -15,7 +15,8 @@ class SingleSignOnProcessor {
                                          "sso_global_logout",
                                          "sso_multiple_region",
                                          "sso_admin_login_port",
-                                         "sso_admin_login_uri");
+                                         "sso_admin_login_uri",
+                                         "sso_one_time_password");
 
     /**
      * uri which unnecessary authenticate with Single Sign-On
@@ -39,8 +40,7 @@ class SingleSignOnProcessor {
      */
     private $necessaryImplementationClass = array("\\OCA\\SingleSignOn\\AuthInfo",
                                                   "\\OCA\\SingleSignOn\\APIServerConnection",
-                                                  "\\OCA\\SingleSignOn\\WebDavAuthInfo",
-                                                  "\\OCA\\SingleSignOn\\RedirectRegion");
+                                                  "\\OCA\\SingleSignOn\\WebDavAuthInfo");
 
     /**
      * \OC\SystemConfig
@@ -87,6 +87,7 @@ class SingleSignOnProcessor {
         if($this->config->getValue("sso_multiple_region")) {
             array_push(self::$requiredKeys, "sso_owncloud_url");
             array_push(self::$requiredKeys, "sso_regions");
+            array_push(self::$necessaryImplementationClass, "\\OCA\\SingleSignOn\\RedirectRegion");
         }
 
         foreach($this->necessaryImplementationClass as $class) {
