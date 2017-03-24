@@ -112,14 +112,67 @@ class GetInfo implements IUserInfoRequest {
         $this->sid = $userInfo["sid"];
         $this->openID = $userInfo["openid"];
         $this->token = $this->setupParams["action"] === "webDavLogin" ? $data["password"] : $data["key"];
-        $titleStr = json_decode($userInfo["titleStr"]);
-        foreach ($titleStr as $item) {
-            foreach ($item->title as $title) {
-                $this->title[] = $title;
-            }
-        }
+        $titleStr = json_decode($userInfo["titleStr"],true)[0];
+        $this->filterTitle($titleStr);
 
         return true;
+    }
+
+    private function filterTitle($titleStr){
+
+        //["sid":"0123","title":["\u6559\u5e2b"]]
+        //["sid":"0123","titles":["\u6559\u5e2b"]]
+        //["sid":"0123","title":"\u6559\u5e2b"]"
+        //[["id":"0123","title":["\u5b78\u751f"]]]
+        if(array_key_exists('titles',$titleStr)){
+            $titleStr = $titleStr['titles'];
+            if (is_array($titleStr)){
+                foreach ($titleStr as $item) {
+                    $this->title[] = $item;
+                }
+            }
+            else{
+                $this->title[] = $titleStr;
+            }
+        }
+        else if(array_key_exists('title',$titleStr)){
+            $titleStr = $titleStr['title'];
+            if (is_array($titleStr)){
+                foreach ($titleStr as $item) {
+                    $this->title[] = $item;
+                }
+            }
+            else{
+                $this->title[] = $titleStr;
+            }
+        }
+        else{
+            $titleStr = $titleStr[0];
+
+            if (array_key_exists('titles',$titleStr)){
+                $titleStr = $titleStr['titles'];
+                if (is_array($titleStr)){
+                    foreach ($titleStr as $item) {
+                        $this->title[] = $item;
+                    }
+                }
+                else{
+                    $this->title[] = $titleStr;
+                }
+            }
+            else if(array_key_exists('title',$titleStr)){
+                $titleStr = $titleStr['title'];
+                if (is_array($titleStr)){
+                    foreach ($titleStr as $item) {
+                        $this->title[] = $item;
+                    }
+                }
+                else{
+                    $this->title[] = $titleStr;
+                }
+            }
+
+        }
     }
 
     public function getErrorMsg() {
@@ -196,7 +249,8 @@ class GetInfo implements IUserInfoRequest {
                 return \OC::$server->getSystemConfig()->getValue("sso_advance_user_group", NUll);
             }
         }
-        return "stutent";
+        return "student";
     }
     
 }
+
