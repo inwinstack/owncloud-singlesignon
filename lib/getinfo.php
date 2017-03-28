@@ -112,7 +112,7 @@ class GetInfo implements IUserInfoRequest {
         $this->sid = $userInfo["sid"];
         $this->openID = $userInfo["openid"];
         $this->token = $this->setupParams["action"] === "webDavLogin" ? $data["password"] : $data["key"];
-        $titleStr = json_decode($userInfo["titleStr"],true)[0];
+        $titleStr = json_decode($userInfo["titleStr"],true);
         $this->filterTitle($titleStr);
 
         return true;
@@ -147,7 +147,7 @@ class GetInfo implements IUserInfoRequest {
             }
         }
         else{
-            $titleStr = $titleStr[0];
+            $titleStr = $titleStr[0][0];
 
             if (array_key_exists('titles',$titleStr)){
                 $titleStr = $titleStr['titles'];
