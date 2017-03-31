@@ -124,6 +124,7 @@ class GetInfo implements IUserInfoRequest {
         //["sid":"0123","titles":["\u6559\u5e2b"]]
         //["sid":"0123","title":"\u6559\u5e2b"]"
         //[["id":"0123","title":["\u5b78\u751f"]]]
+        //[{\"sid\":\"0123\",\"title\":[\"\\u6559\\u5e2b\"]}]
         if(array_key_exists('titles',$titleStr)){
             $titleStr = $titleStr['titles'];
             if (is_array($titleStr)){
@@ -147,31 +148,8 @@ class GetInfo implements IUserInfoRequest {
             }
         }
         else{
-            $titleStr = $titleStr[0][0];
-
-            if (array_key_exists('titles',$titleStr)){
-                $titleStr = $titleStr['titles'];
-                if (is_array($titleStr)){
-                    foreach ($titleStr as $item) {
-                        $this->title[] = $item;
-                    }
-                }
-                else{
-                    $this->title[] = $titleStr;
-                }
-            }
-            else if(array_key_exists('title',$titleStr)){
-                $titleStr = $titleStr['title'];
-                if (is_array($titleStr)){
-                    foreach ($titleStr as $item) {
-                        $this->title[] = $item;
-                    }
-                }
-                else{
-                    $this->title[] = $titleStr;
-                }
-            }
-
+            $titleStr = $titleStr[0];
+            $this->filterTitle($titleStr);
         }
     }
 
