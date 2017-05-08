@@ -18,7 +18,7 @@ class UserInfoSetter
         $config = \OC::$server->getConfig();
         $userID = $userInfo->getUserId();
 
-        if ($config->getUserValue($userID, "setting", "role") != NULL && $config->getUserValue($userID, "files", "quota") == "15 GB") {
+        if ($config->getUserValue($userID, "settings", "role") != NULL && $config->getUserValue($userID, "files", "quota") == "15 GB") {
             return;
         }
 
