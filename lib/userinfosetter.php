@@ -18,6 +18,12 @@ class UserInfoSetter
         $config = \OC::$server->getConfig();
         $userID = $userInfo->getUserId();
 
+        $data = ['region' => $userInfo->getRegion(),
+                 'schoolCode' => 'undefined',
+                ];
+        $config->setUserValue($userID, "settings", "regionData", json_encode($data));
+
+
         if ($config->getUserValue($userID, "settings", "role") != NULL && $config->getUserValue($userID, "files", "quota") == "15 GB") {
             return;
         }
