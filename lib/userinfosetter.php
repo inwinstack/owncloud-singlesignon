@@ -18,9 +18,14 @@ class UserInfoSetter
         $config = \OC::$server->getConfig();
         $userID = $userInfo->getUserId();
 
-        $data = ['region' => $userInfo->getRegion(),
-                 'schoolCode' => 'undefined',
-                ];
+        $regionData = \OC::$server->getConfig()->getUserValue($userID, "settings", "regionData",false);
+        if (!$regionData){
+            $data = ['region' => $userInfo->getRegion(),
+                    'schoolCode' => 'undefined',
+            ];
+            $config->setUserValue($userID, "settings", "regionData", json_encode($data));
+        }
+
         $config->setUserValue($userID, "settings", "regionData", json_encode($data));
 
 
