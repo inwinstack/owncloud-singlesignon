@@ -148,8 +148,13 @@ class GetInfo implements IUserInfoRequest {
             }
         }
         else{
-            $titleStr = $titleStr[0];
-            $this->filterTitle($titleStr);
+            if (isset($titleStr[0])){
+                $titleStr = $titleStr[0];
+                $this->filterTitle($titleStr);
+            }
+            else{
+                \OCP\Util::writeLog('singlesignon',"The user($this->userId) "."Can't filter the title info".json_encode($titleStr), \OCP\Util::INFO);
+            }
         }
     }
 
@@ -214,7 +219,7 @@ class GetInfo implements IUserInfoRequest {
     {
         return $this->errorMsg ? true : false;
     }
-    
+
     /**
      * Get user role in this system
      *
@@ -229,6 +234,6 @@ class GetInfo implements IUserInfoRequest {
         }
         return "student";
     }
-    
+
 }
 
