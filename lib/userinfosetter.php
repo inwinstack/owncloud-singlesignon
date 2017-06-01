@@ -29,7 +29,7 @@ class UserInfoSetter
         $config->setUserValue($userID, "settings", "regionData", json_encode($data));
 
 
-        if ($config->getUserValue($userID, "settings", "role") != NULL && $config->getUserValue($userID, "files", "quota") == "15 GB") {
+        if ($config->getUserValue($userID, "settings", "role") != NULL) {
             return;
         }
 
@@ -40,10 +40,10 @@ class UserInfoSetter
 
         if ($userInfo->getRole() === $advanceGroup) {
             $config->setUserValue($userID, "settings", "role", $userInfo->getRole());
-            $config->setUserValue($userID, "files", "quota", "15 GB");
-            if($config->getUserValue($userID, "teacher_notification", "notification", NULL) === NULL) {
-                $config->setUserValue($userID, "teacher_notification", "notification", "1");
-            }
+            //$config->setUserValue($userID, "files", "quota", "15 GB");
+            //if($config->getUserValue($userID, "teacher_notification", "notification", NULL) === NULL) {
+            //    $config->setUserValue($userID, "teacher_notification", "notification", "1");
+            //}
 
             $group = \OC::$server->getGroupManager()->get($advanceGroup);
             if(!$group) {
