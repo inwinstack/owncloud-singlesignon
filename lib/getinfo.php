@@ -64,6 +64,9 @@ class GetInfo implements IUserInfoRequest {
         if ($statusCode != 0) {
             if($this->setupParams["action"] == "webDavLogin") {
                 switch ($statusCode) {
+                    case -2:
+                        $errorMsg = "Permission denied";
+                        break;
                     case 1:
                         $errorMsg = "Missing parameter 'password'";
                         break;

@@ -152,7 +152,8 @@ class SingleSignOnProcessor {
         }
 
         if(!$authInfo || (!RequestManager::send(ISingleSignOnRequest::VALIDTOKEN, $authInfo) && !$this->config->getValue("sso_one_time_password"))) {
-            $url = $this->redirectUrl ? $ssoUrl . $this->config->getValue("sso_return_url_key") . $this->redirectUrl : $ssoUrl;
+            //$url = $this->redirectUrl ? $ssoUrl . $this->config->getValue("sso_return_url_key") . $this->redirectUrl : $ssoUrl;
+            $url = $this->config->getValue("storage_url").'login.php';
             Util::redirect($url);
         }
 

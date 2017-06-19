@@ -197,6 +197,9 @@ class Util {
         $userInfo->setup(array("action" => "webDavLogin"));
 
         if(!$userInfo->send($authInfo)) {
+            if($userInfo->hasErrorMsg()) {
+                \OCP\Util::writeLog("Single Sign-On", $userInfo->getErrorMsg(), \OCP\Util::ERROR);
+            }
             return ;
         }
 
