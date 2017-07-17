@@ -49,7 +49,8 @@ class AuthInfo implements IAuthInfo
             }
         }
 
-        if(\OC_User::getUser() != self::$info["userid"]) {
+        //if(\OC_User::getUser() != self::$info["userid"]) {
+        if (!in_array(\OC_User::getUser(),[false,self::$info["userid"]])){
             \OC_User::logout();
         }
 
