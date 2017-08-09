@@ -48,7 +48,7 @@ class UserInfoSetter
             }
             $group->addUser($user);
         }
-        $config->setUserValue($userID, "files", "quota", "30 GB");
+        //$config->setUserValue($userID, "files", "quota", "30 GB");
     }
     
 }
