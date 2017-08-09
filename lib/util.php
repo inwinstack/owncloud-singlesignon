@@ -9,7 +9,7 @@ class Util {
     //'{'openid':['xx國中','教師','openid',5,1],'openid':['xx國小','教師','openid',6,2],}'
     public static $teachersArray =
         '{
-        "openid":["xx國中","教師","openid",5,1],
+        "openid":["xx國中","教師","openid",5,1]
         }';
 
     public static function login($userInfo, $authInfo) {
