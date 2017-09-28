@@ -119,6 +119,22 @@ class SingleSignOnProcessor {
             if($this->config->getValue("sso_global_logout")) {
                 RequestManager::send(ISingleSignOnRequest::INVALIDTOKEN, $authInfo);
             }
+            
+            if(\OC_App::isEnabled('tanet_auth')) {
+                $userId = \OC_User::getUser();
+                if ($userId !==false){
+
+                    $config = \OC::$server->getConfig();
+                    $role = $config->getUserValue($userId, "settings", "role");
+                    if ($role == 'TANet'){
+                        \OC_User::logout();
+                            $template = new \OC_Template("singlesignon", "tanetlogout", "guest");
+                            $template->printPage();
+                            die();
+                    }
+               }
+            }
+ 
             \OC_User::logout();
             $template = new \OC_Template("singlesignon", "logout", "guest");
             $template->printPage();
