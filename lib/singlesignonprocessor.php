@@ -25,6 +25,8 @@ class SingleSignOnProcessor {
                                                 "(.*\/s\/.*)",
                                                 "(\/admin)",
                                                 "(.*\/ocs\/.*)",
+                                                "(\/cron.php)",
+                                                "(\/upload.php)",
                                                 "(\/core\/js\/oc\.js)",
                                                 "(\/apps\/gallery\/config\.public)",
                                                 "(.*\/files_sharing\/ajax\/.*)",
