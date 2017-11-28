@@ -26,7 +26,8 @@ class UserInfoSetter
             $config->setUserValue($userID, "settings", "regionData", json_encode($data));
         }
 
-        if ($config->getUserValue($userID, "settings", "role") != NULL) {
+        $savedRole = $config->getUserValue($userID, "settings", "role");
+        if ($savedRole != NULL && $savedRole == $userInfo->getRole()) {
             return;
         }
 
