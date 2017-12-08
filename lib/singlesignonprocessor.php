@@ -24,6 +24,7 @@ class SingleSignOnProcessor {
                                                 "(.*\/cloud.*)",
                                                 "(.*\/s\/.*)",
                                                 "(\/admin)",
+                                                "(\/local)",
                                                 "(.*\/ocs\/.*)",
                                                 "(\/cron.php)",
                                                 "(\/upload.php)",
@@ -121,22 +122,25 @@ class SingleSignOnProcessor {
             if($this->config->getValue("sso_global_logout")) {
                 RequestManager::send(ISingleSignOnRequest::INVALIDTOKEN, $authInfo);
             }
-            
-            if(\OC_App::isEnabled('tanet_auth')) {
-                $userId = \OC_User::getUser();
-                if ($userId !==false){
-
-                    $config = \OC::$server->getConfig();
-                    $role = $config->getUserValue($userId, "settings", "role");
-                    if ($role == 'TANet'){
-                        \OC_User::logout();
-                            $template = new \OC_Template("singlesignon", "tanetlogout", "guest");
-                            $template->printPage();
-                            die();
-                    }
-               }
+            $userId = \OC_User::getUser();
+            if ($userId !==false){
+                $template = new \OC_Template("singlesignon", "middlelogout", "guest");
+                if (\OC::$server->getSession()->get("LOGIN_ASUS")){
+                    $template->assign('login_type','asus');
+                }
+                else if(\OC::$server->getSession()->get("LOGIN_TANET")){
+                    $template->assign('login_type','tanet');
+                }
+                else if(\OC::$server->getSession()->get("LOGIN_SSO")){
+                    $template->assign('login_type','sso');
+                }
+                else {
+                    $template->assign('login_type','local');
+                }
+                \OC_User::logout();
+                $template->printPage();
+                die();
             }
- 
             \OC_User::logout();
             $template = new \OC_Template("singlesignon", "logout", "guest");
             $template->printPage();
@@ -198,6 +202,7 @@ class SingleSignOnProcessor {
         }
 
         if(!\OC_User::userExists($userInfo->getUserId())) {
+            \OC::$server->getSession()->set("LOGIN_SSO",true);
             Util::firstLogin($userInfo, $authInfo);
             if($this->request->getHeader("ORIGIN")) {
                 return;
@@ -205,6 +210,7 @@ class SingleSignOnProcessor {
             Util::redirect($this->defaultPageUrl);
         }
         else {
+            \OC::$server->getSession()->set("LOGIN_SSO",true);
             Util::login($userInfo, $authInfo);
         
             if($this->request->getHeader("ORIGIN")) {

@@ -23,7 +23,7 @@ $container->registerService("L10N", function($c) {
 
 $request = \OC::$server->getRequest();
 
-if(!$request->offsetGet("asus") &&  !$request->offsetGet("tanet")) {
+if(!$request->offsetGet("asus") &&  !$request->offsetGet("tanet") && !\OC::$CLI) {
     $processor = new \OCA\SingleSignOn\SingleSignOnProcessor();
     $processor->run();
 }
