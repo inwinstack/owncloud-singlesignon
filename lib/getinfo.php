@@ -57,6 +57,9 @@ class GetInfo implements IUserInfoRequest {
         $url = $serverUrl . "?" . http_build_query($params);
 
         curl_setopt($serverConnection, CURLOPT_URL, $url);
+        curl_setopt($serverConnection, CURLOPT_SSL_VERIFYHOST, 0);
+        curl_setopt($serverConnection, CURLOPT_SSL_VERIFYPEER, 0);
+
         $result = curl_exec($serverConnection);
         $result = json_decode($result, true);
         $statusCode = (int)$result["retcode"];
