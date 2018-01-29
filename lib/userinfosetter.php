@@ -19,11 +19,15 @@ class UserInfoSetter
         $userID = $userInfo->getUserId();
 
         $regionData = \OC::$server->getConfig()->getUserValue($userID, "settings", "regionData",false);
-        if (!$regionData){
-            $data = ['region' => $userInfo->getRegion(),
-                    'schoolCode' => 'undefined',
-            ];
-            $config->setUserValue($userID, "settings", "regionData", json_encode($data));
+        $regionDataDecoded = json_decode($regionData,true);
+        if (!$regionData ||
+            $regionDataDecoded['region'] !== $userInfo->getRegion() ||
+            $regionDataDecoded['schoolCode'] !== $userInfo->getSchoolId()
+            ){
+                $data = ['region' => $userInfo->getRegion(),
+                         'schoolCode' => $userInfo->getSchoolId(),
+                        ];
+                $config->setUserValue($userID, "settings", "regionData", json_encode($data));
         }
 
         $savedRole = $config->getUserValue($userID, "settings", "role");

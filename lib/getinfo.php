@@ -195,6 +195,10 @@ class GetInfo implements IUserInfoRequest {
         return $this->displayName;
     }
 
+    public function getSchoolId(){
+        return $this->sid;
+    }
+
     /**
      * Get user auth token
      *
