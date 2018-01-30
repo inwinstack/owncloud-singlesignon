@@ -145,6 +145,8 @@ class Util {
         $password = RequestManager::getRequest(ISingleSignOnRequest::USERPASSWORDGENERATOR) ? RequestManager::send(ISingleSignOnRequest::USERPASSWORDGENERATOR) : $userID;
 
         $user = \OC_User::createUser($userID, $password);
+        $config = \OC::$server->getConfig();
+        $config->setUserValue($userID, "login", "firstLogin", time());
 
         if (class_exists('\\OCA\\SingleSignOn\\UserInfoSetter')) {
             UserInfoSetter::setInfo($user, $userInfo);
