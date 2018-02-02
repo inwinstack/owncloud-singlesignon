@@ -30,18 +30,21 @@ class UserInfoSetter
                 $config->setUserValue($userID, "settings", "regionData", json_encode($data));
         }
 
-        $savedRole = $config->getUserValue($userID, "settings", "role");
-        if ($savedRole != NULL && $savedRole == $userInfo->getRole()) {
-            return;
+        $savedRole = $config->getUserValue($userID, "settings", "role",NULL);
+        if ($savedRole !== $userInfo->getRole()) {
+            $config->setUserValue($userID, "settings", "role", $userInfo->getRole());
+        }
+    
+        $savedEmail = $config->getUserValue($userID, "settings", "email",NULL);
+        if ($savedEmail !== $userInfo->getEmail()) {
+            $config->setUserValue($userID, "settings", "email", $userInfo->getEmail());
         }
 
         $advanceGroup = \OC::$server->getSystemConfig()->getValue("sso_advance_user_group", NULL);
 
         \OC_User::setDisplayName($userID, $userInfo->getDisplayName());
-        $config->setUserValue($userID, "settings", "email", $userInfo->getEmail());
 
         if ($userInfo->getRole() === $advanceGroup) {
-            $config->setUserValue($userID, "settings", "role", $userInfo->getRole());
             //$config->setUserValue($userID, "files", "quota", "15 GB");
             //if($config->getUserValue($userID, "teacher_notification", "notification", NULL) === NULL) {
             //    $config->setUserValue($userID, "teacher_notification", "notification", "1");

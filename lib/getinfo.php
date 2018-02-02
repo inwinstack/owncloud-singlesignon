@@ -6,7 +6,9 @@ class GetInfo implements IUserInfoRequest {
                                        "教師",
                                        "職員",
                                        "縣市管理者",
-                                       "學校管理者");
+                                       "學校管理者",
+                                       "跨校人員"
+                                       );
     private $connection;
     private $setupParams = array();
     private $userId;
