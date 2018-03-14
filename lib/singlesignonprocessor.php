@@ -201,6 +201,16 @@ class SingleSignOnProcessor {
             Util::redirectRegion($userInfo, $this->config->getValue("sso_regions"), $this->config->getValue("sso_owncloud_url"));
         }
 
+        if(!\OC_User::isEnabled($userInfo->getUserId()) && \OC_User::userExists($userInfo->getUserId())){
+            header('HTTP/1.1 401 Service Temporarily Unavailable');
+            header('Status: 401 Service Temporarily Unavailable');
+
+            $template = new \OC_Template('user_status_validator', 'userdisable', 'guest');
+            $template->printPage();
+            die();
+
+        } 
+
         if(!\OC_User::userExists($userInfo->getUserId())) {
             \OC::$server->getSession()->set("LOGIN_SSO",true);
             Util::firstLogin($userInfo, $authInfo);
